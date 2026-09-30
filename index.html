@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Role-Play Library — Phrasal Verb Studio</title>
+<style>
+  :root{
+    --paper:#faf4ea;
+    --card:#fffdf8;
+    --ink:#2e2a26;
+    --muted:#8a7f72;
+    --line:#e8ddcd;
+    --accent:#c9862f;
+    --gold:#ffe9a8;
+    --ok:#2f6b47;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 600px at 10% -10%, #fff8ec 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #f2f7f3 0%, transparent 55%),
+      var(--paper);
+    min-height:100vh;
+  }
+  .wrap{max-width:1280px;margin:0 auto;padding:18px 18px 40px;}
+
+  /* ---------- header ---------- */
+  .top{
+    display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .brand{display:flex;align-items:center;gap:12px;min-width:0;}
+  .logo{
+    width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;
+    background:linear-gradient(145deg,#fff2dd,#f7dfbe);
+    border:1px solid #eeddc2;box-shadow:0 3px 10px rgba(180,140,80,.18);flex:none;
+  }
+  h1{font-size:19px;margin:0;letter-spacing:-.3px;}
+  .brand p{margin:2px 0 0;font-size:12.5px;color:var(--muted);}
+
+  .tabs{
+    display:flex;gap:4px;background:#fff;border:1px solid var(--line);
+    border-radius:12px;padding:4px;box-shadow:0 2px 8px rgba(130,110,80,.06);
+  }
+  .tab{
+    font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:0;background:transparent;
+    color:#7b7164;padding:7px 16px;border-radius:9px;transition:.16s;white-space:nowrap;
+  }
+  .tab:hover{color:#4a4239;background:#fdf7ec;}
+  .tab.active{background:linear-gradient(160deg,#d1903c,#b9762a);color:#fff;
+    box-shadow:0 4px 12px rgba(185,118,42,.28);}
+
+  .toggles{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .switch{
+    display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none;
+    background:#fff;border:1px solid var(--line);border-radius:999px;
+    padding:6px 12px;font-size:12.5px;color:#5d544a;transition:.18s;
+  }
+  .switch:hover{border-color:#d6c8b2;}
+  .switch input{accent-color:var(--accent);width:14px;height:14px;margin:0;cursor:pointer;}
+  .switch.on{background:#fff6e6;border-color:#e9cf9f;color:#8a5c11;font-weight:600;}
+
+  .btn{
+    font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;
+    border-radius:11px;padding:9px 16px;border:1px solid var(--line);
+    background:#fff;color:#4a4239;transition:.16s;line-height:1.2;
+    text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(120,100,70,.13);}
+  .btn:active{transform:translateY(0);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+  .btn.primary{
+    background:linear-gradient(160deg,#d1903c,#b9762a);border-color:#a96a24;color:#fff;
+    box-shadow:0 5px 16px rgba(185,118,42,.32);padding:10px 22px;
+  }
+  .btn.ghost{background:#fffdf8;}
+  .btn.small{font-size:12.5px;padding:7px 13px;}
+  .btn.tiny{font-size:11.5px;padding:5px 10px;border-radius:9px;}
+  .btn.danger{color:#9c2f2f;border-color:#f0c4c4;background:#fff7f7;}
+  .btn.danger:hover{background:#fdeaea;}
+
+  .hidden{display:none !important;}
+
+  /* =========================================================
+     LIBRARY VIEW
+     ========================================================= */
+  .lib{display:flex;flex-direction:column;gap:18px;animation:pop .35s ease;}
+  @keyframes pop{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .lib-head{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;}
+  .lib-head h2{margin:0 0 4px;font-size:24px;letter-spacing:-.5px;}
+  .lib-sub{margin:0;font-size:13px;color:var(--muted);}
+  .lib-actions{display:flex;flex-wrap:wrap;gap:8px;}
+
+  .mini-stats{display:flex;flex-wrap:wrap;gap:10px;}
+  .mini{
+    display:flex;align-items:center;gap:8px;font-size:12.5px;
+    background:#fff;border:1px solid var(--line);border-radius:999px;
+    padding:6px 14px;color:#6a6055;box-shadow:0 2px 8px rgba(130,110,80,.06);
+  }
+  .mini b{color:#3a332c;font-variant-numeric:tabular-nums;}
+
+  /* toolbar */
+  .toolbar{
+    display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:14px 16px;box-shadow:0 10px 28px rgba(120,100,70,.08);
+  }
+  .search{
+    flex:1;min-width:200px;display:flex;align-items:center;gap:8px;
+    background:#fffdf8;border:1px solid var(--line);border-radius:11px;padding:8px 13px;
+    transition:.16s;
+  }
+  .search:focus-within{border-color:#d9b877;box-shadow:0 0 0 3px rgba(217,184,119,.22);}
+  .search span{color:#b3a795;font-size:14px;}
+  .search input{
+    border:0;outline:0;background:transparent;font:inherit;font-size:13.5px;
+    color:var(--ink);width:100%;
+  }
+  .select{
+    font:inherit;font-size:13px;font-weight:600;color:#5d544a;
+    background:#fffdf8;border:1px solid var(--line);border-radius:11px;
+    padding:9px 12px;cursor:pointer;outline:0;
+  }
+  .select:focus{border-color:#d9b877;}
+
+  /* tag filter bar */
+  .tagbar{
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+    padding:0 2px;
+  }
+  .tagbar-label{font-size:11.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#a2988a;margin-right:2px;}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12.5px;font-weight:600;cursor:pointer;
+    background:#fff;border:1px solid var(--line);color:#6a6055;
+    padding:5px 12px;border-radius:999px;transition:.16s;
+  }
+  .chip:hover{border-color:#d9c49a;background:#fffaf0;transform:translateY(-1px);}
+  .chip.active{
+    background:linear-gradient(160deg,#d1903c,#b9762a);border-color:#a96a24;color:#fff;
+    box-shadow:0 4px 12px rgba(185,118,42,.28);
+  }
+  .chip .n{
+    font-size:10.5px;font-variant-numeric:tabular-nums;
+    background:rgba(0,0,0,.07);border-radius:999px;padding:0 6px;line-height:1.5;
+  }
+  .chip.active .n{background:rgba(255,255,255,.25);}
+  .chip.clear{color:#9c2f2f;border-color:#f0c4c4;background:#fff7f7;}
+  .chip.clear:hover{background:#fdeaea;}
+
+  /* cards grid */
+  .cards{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;
+  }
+  @media(max-width:640px){.cards{grid-template-columns:1fr;}}
+
+  .rp-card{
+    background:var(--card);border:1px solid var(--line);border-radius:20px;
+    padding:18px 18px 14px;box-shadow:0 10px 28px rgba(120,100,70,.08);
+    display:flex;flex-direction:column;gap:12px;transition:.2s;position:relative;overflow:hidden;
+  }
+  .rp-card::before{
+    content:'';position:absolute;left:0;top:0;bottom:0;width:5px;
+    background:linear-gradient(180deg,var(--c1,#c9862f),var(--c2,#e0a75a));
+  }
+  .rp-card:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(120,100,70,.16);border-color:#e2d3b8;}
+
+  .rp-top{display:flex;gap:12px;align-items:flex-start;}
+  .rp-avatars{display:flex;flex:none;}
+  .rp-avatars .av{
+    width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+    font-size:11px;font-weight:800;color:#fff;letter-spacing:.3px;
+    border:2px solid var(--card);box-shadow:0 2px 6px rgba(0,0,0,.13);
+  }
+  .rp-avatars .av + .av{margin-left:-11px;}
+  .rp-titles{min-width:0;flex:1;}
+  .rp-title{
+    font-size:15.5px;font-weight:700;letter-spacing:-.2px;margin:0 0 3px;
+    line-height:1.25;word-wrap:break-word;
+  }
+  .rp-sub{font-size:12px;color:var(--muted);margin:0;line-height:1.4;}
+  .rp-scene{
+    font-size:12px;color:#8a7f72;display:flex;gap:6px;align-items:flex-start;line-height:1.45;
+  }
+  .rp-scene span:first-child{flex:none;opacity:.75;}
+
+  .rp-stats{display:flex;flex-wrap:wrap;gap:6px;}
+  .pill{
+    font-size:11px;font-weight:700;letter-spacing:.3px;
+    background:#fdf7ec;border:1px solid #f0e6d4;color:#8a7f72;
+    border-radius:999px;padding:3px 10px;font-variant-numeric:tabular-nums;
+  }
+  .pill.gold{background:#fff4e0;border-color:#e9cd97;color:#a3701f;}
+
+  .rp-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:24px;}
+  .tag{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11.5px;font-weight:600;
+    background:#eef4f0;border:1px solid #d5e6dc;color:#3d6b52;
+    border-radius:8px;padding:3px 9px;cursor:pointer;transition:.15s;
+  }
+  .tag:hover{background:#e2efe7;border-color:#bfd9c9;}
+  .tag.plain{cursor:default;}
+  .tag.plain:hover{background:#eef4f0;border-color:#d5e6dc;}
+  .tag-empty{font-size:11.5px;color:#b3a795;font-style:italic;}
+  .tag-add{
+    font-size:11.5px;font-weight:700;cursor:pointer;
+    background:transparent;border:1px dashed #d9c49a;color:#a3701f;
+    border-radius:8px;padding:3px 9px;transition:.15s;font-family:inherit;
+  }
+  .tag-add:hover{background:#fff6e6;border-style:solid;}
+
+  .rp-foot{
+    display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    border-top:1px dashed #ece2d1;padding-top:12px;margin-top:auto;
+  }
+  .rp-foot .spacer{flex:1;}
+  .rp-date{font-size:11px;color:#b3a795;font-variant-numeric:tabular-nums;}
+
+  /* empty state */
+  .empty{
+    text-align:center;padding:54px 24px;background:var(--card);
+    border:2px dashed #e3d3b6;border-radius:20px;color:#8a7f72;
+  }
+  .empty .ico{font-size:42px;margin-bottom:10px;}
+  .empty h3{margin:0 0 6px;color:#5d544a;font-size:17px;}
+  .empty p{margin:0 0 18px;font-size:13.5px;line-height:1.6;}
+
+  /* drop zone */
+  .drop{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    border:2px dashed #e3d3b6;border-radius:18px;background:#fffdf7;
+    padding:28px 18px;text-align:center;cursor:pointer;transition:.18s;
+  }
+  .drop:hover{border-color:#d9b877;background:#fffaf0;}
+  .drop.over{border-color:#c9862f;background:#fff4e0;transform:scale(1.01);}
+  .drop .ico{font-size:30px;}
+  .drop strong{font-size:14.5px;}
+  .drop small{font-size:12px;color:#a2988a;line-height:1.5;}
+
+  .status{
+    margin-top:12px;font-size:12.5px;border-radius:11px;padding:11px 14px;line-height:1.55;display:none;
+  }
+  .status.show{display:block;}
+  .status.ok{background:#e8f4ec;border:1px solid #bfe0cb;color:#2f6b47;}
+  .status.err{background:#fdeaea;border:1px solid #f0c4c4;color:#9c2f2f;}
+  .status ul{margin:6px 0 0;padding-left:18px;}
+
+  /* =========================================================
+     PLAY VIEW  (unchanged engine)
+     ========================================================= */
+  .grid{display:grid;grid-template-columns:1fr 322px;gap:16px;align-items:start;}
+  @media(max-width:900px){.grid{grid-template-columns:1fr;}}
+
+  .stage{
+    background:var(--card);border:1px solid var(--line);border-radius:20px;
+    box-shadow:0 14px 40px rgba(120,100,70,.10);
+    display:flex;flex-direction:column;overflow:hidden;
+    height:calc(100vh - 190px);min-height:520px;
+  }
+  @media(max-width:900px){.stage{height:auto;min-height:0;}}
+
+  .scene-bar{
+    display:flex;align-items:center;gap:10px;
+    padding:11px 16px;font-size:12.5px;color:#6f6558;
+    background:linear-gradient(180deg,#fffaf1,#fdf5e9);
+    border-bottom:1px solid var(--line);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:#5fae7f;box-shadow:0 0 0 3px #dff2e6;flex:none;}
+  .progress{flex:1;height:6px;background:#efe6d8;border-radius:999px;overflow:hidden;margin-left:6px;}
+  .progress span{display:block;height:100%;width:0%;border-radius:999px;
+    background:linear-gradient(90deg,#e0a75a,#c9862f);transition:width .35s ease;}
+
+  .chat{
+    flex:1;overflow-y:auto;padding:20px 18px 8px;
+    display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth;
+  }
+  @media(max-width:900px){.chat{max-height:58vh;}}
+
+  .msg{display:flex;gap:10px;max-width:86%;animation:pop .3s cubic-bezier(.2,.9,.3,1.2);}
+  .msg.left{align-self:flex-start;}
+  .msg.right{align-self:flex-end;flex-direction:row-reverse;}
+  .avatar{
+    width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;
+    font-size:11.5px;font-weight:800;color:#fff;letter-spacing:.4px;
+    box-shadow:0 3px 8px rgba(0,0,0,.14);
+  }
+  .body{display:flex;flex-direction:column;gap:5px;min-width:0;}
+  .msg.right .body{align-items:flex-end;}
+  .who{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:0 4px;}
+  .bubble{
+    padding:11px 15px;border-radius:16px;line-height:1.55;font-size:15px;
+    background:var(--soft,#fff);border:1px solid var(--line-c,#e8ddcd);
+    box-shadow:0 2px 8px rgba(130,110,80,.07);
+    word-wrap:break-word;
+  }
+  .msg.left  .bubble{border-top-left-radius:5px;}
+  .msg.right .bubble{border-top-right-radius:5px;}
+  .bubble mark{
+    background:var(--gold);color:#7a4a00;font-weight:700;
+    padding:1px 5px;border-radius:6px;box-shadow:inset 0 -1px 0 #e8c96b;
+  }
+  .def{
+    font-size:12px;color:#7b7164;background:#fffdf6;border:1px dashed #e3d6bf;
+    padding:5px 10px;border-radius:9px;line-height:1.45;max-width:100%;
+    animation:pop .3s ease;
+  }
+  .def b{color:#a3701f;}
+
+  .banner{
+    align-self:center;margin:14px 0 6px;padding:14px 20px;border-radius:14px;
+    background:linear-gradient(160deg,#fff6e5,#fdeed6);border:1px solid #eed7ab;
+    font-size:13.5px;color:#7a5a1c;text-align:center;max-width:92%;
+    animation:pop .4s ease;
+  }
+
+  .hint{
+    min-height:0;font-size:12.5px;color:#8a5c11;font-weight:600;
+    padding:0 18px;transition:.2s;
+  }
+  .hint:not(:empty){padding:10px 18px 0;}
+  .controls{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:14px 18px;border-top:1px solid var(--line);
+    background:linear-gradient(180deg,#fffdf8,#fdf8ef);
+  }
+  .counter{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto;}
+
+  .panel{
+    background:var(--card);border:1px solid var(--line);border-radius:20px;
+    box-shadow:0 14px 40px rgba(120,100,70,.09);
+    padding:16px 16px 12px;max-height:calc(100vh - 190px);
+    display:flex;flex-direction:column;
+  }
+  @media(max-width:900px){.panel{max-height:none;}}
+  .panel h2{margin:0 0 3px;font-size:13px;letter-spacing:.7px;text-transform:uppercase;color:#8a7f72;}
+  .panel .sub{font-size:12px;color:#a2988a;margin:0 0 12px;}
+  .verb-list{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:5px;}
+  .verb{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:7px 11px;border-radius:10px;font-size:13px;
+    background:#fdfaf3;border:1px solid #f0e8da;color:#6a6055;transition:.25s;
+  }
+  .verb .vname{font-weight:600;}
+  .verb .vcount{
+    font-size:11px;font-variant-numeric:tabular-nums;color:#a89c8b;
+    background:#fff;border:1px solid #ece2d1;border-radius:999px;padding:1px 8px;font-weight:700;
+  }
+  .verb.hit{background:#fff4e0;border-color:#e9cd97;color:#8a5c11;}
+  .verb.hit .vcount{color:#a3701f;border-color:#e9cd97;}
+  .verb.done{background:#e8f4ec;border-color:#bfe0cb;color:#2f6b47;}
+  .verb.done .vcount{color:#2f6b47;border-color:#bfe0cb;background:#fff;}
+  .verb.flash{animation:flash .55s ease;}
+  @keyframes flash{
+    0%{transform:scale(1);}
+    35%{transform:scale(1.045);box-shadow:0 0 0 4px rgba(230,190,110,.35);}
+    100%{transform:scale(1);}
+  }
+
+  /* =========================================================
+     FORMAT VIEW
+     ========================================================= */
+  .fmt{display:flex;flex-direction:column;gap:16px;animation:pop .35s ease;}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:20px;
+    padding:20px 22px;box-shadow:0 14px 40px rgba(120,100,70,.09);
+  }
+  .card h3{margin:0 0 5px;font-size:16px;letter-spacing:-.2px;}
+  .card .card-sub{margin:0 0 16px;font-size:12.5px;color:#a2988a;line-height:1.55;}
+  .fmt-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+  @media(max-width:980px){.fmt-cols{grid-template-columns:1fr;}}
+
+  pre.json{
+    margin:0;background:#2b2723;color:#e8e0d4;border-radius:14px;
+    padding:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.2px;line-height:1.65;overflow:auto;max-height:520px;
+    border:1px solid #1f1c19;
+  }
+  pre.json .jk{color:#f0b46b;}
+  pre.json .js{color:#8fd0b6;}
+  pre.json .jn{color:#c9a7f0;}
+  pre.json .jb{color:#f08b8b;}
+  pre.json .ju{color:#9a8f80;font-style:italic;}
+
+  .field-list{display:flex;flex-direction:column;gap:0;}
+  .field{
+    display:grid;grid-template-columns:150px 1fr;gap:14px;
+    padding:11px 0;border-bottom:1px dashed #ece2d1;font-size:12.5px;line-height:1.55;
+  }
+  .field:last-child{border-bottom:0;}
+  .field .fk{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-weight:700;color:#a3701f;font-size:12px;word-break:break-word;
+  }
+  .field .fv{color:#6a6055;}
+  .field .fv b{color:#4a4239;}
+  .req{
+    font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+    background:#fdeaea;color:#9c2f2f;border:1px solid #f0c4c4;
+    border-radius:5px;padding:1px 5px;margin-left:5px;vertical-align:1px;
+  }
+  .opt{
+    font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+    background:#eef4f0;color:#3d6b52;border:1px solid #d5e6dc;
+    border-radius:5px;padding:1px 5px;margin-left:5px;vertical-align:1px;
+  }
+
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.92em;background:#f4ece0;border:1px solid #e8dcc8;
+    border-radius:5px;padding:1px 5px;color:#8a5c11;
+  }
+
+  /* =========================================================
+     MODALS
+     ========================================================= */
+  .overlay{
+    position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;
+    background:rgba(60,48,34,.45);backdrop-filter:blur(6px);animation:fade .25s ease;
+  }
+  @keyframes fade{from{opacity:0;}to{opacity:1;}}
+  .overlay.hidden{display:none;}
+
+  .modal-card{
+    background:var(--card);border-radius:22px;padding:26px;max-width:600px;width:100%;
+    box-shadow:0 30px 80px rgba(60,45,25,.38);border:1px solid #efe4d1;
+    animation:pop .35s cubic-bezier(.2,.9,.3,1.2);max-height:90vh;overflow:auto;
+  }
+  .modal-card h2{margin:0 0 6px;font-size:20px;letter-spacing:-.4px;}
+  .modal-sub{margin:0 0 18px;color:#7b7164;font-size:13.5px;line-height:1.55;}
+
+  .roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+  .role{
+    font:inherit;cursor:pointer;text-align:left;
+    background:#fffdf8;border:1.5px solid var(--line);border-radius:16px;
+    padding:16px 14px;display:flex;flex-direction:column;gap:8px;
+    transition:.18s;color:inherit;
+  }
+  .role:hover{transform:translateY(-3px);border-color:#dcb87c;box-shadow:0 12px 26px rgba(150,120,70,.18);}
+  .role strong{font-size:14px;}
+  .role small{font-size:11.5px;color:#8a7f72;line-height:1.45;}
+  .role .avatar{width:40px;height:40px;font-size:12px;}
+
+  /* tag editor */
+  .tag-editor{
+    display:flex;flex-wrap:wrap;gap:8px;min-height:52px;align-items:flex-start;
+    background:#fffdf8;border:1px solid var(--line);border-radius:14px;
+    padding:12px;margin-bottom:12px;
+  }
+  .tag-pill{
+    display:inline-flex;align-items:center;gap:7px;
+    font-size:12.5px;font-weight:600;
+    background:#eef4f0;border:1px solid #d5e6dc;color:#3d6b52;
+    border-radius:9px;padding:5px 8px 5px 11px;animation:pop .2s ease;
+  }
+  .tag-pill button{
+    border:0;background:rgba(0,0,0,.06);color:#3d6b52;cursor:pointer;
+    width:17px;height:17px;border-radius:50%;display:grid;place-items:center;
+    font-size:12px;line-height:1;padding:0;font-family:inherit;transition:.14s;
+  }
+  .tag-pill button:hover{background:#f0c4c4;color:#9c2f2f;}
+  .tag-ph{font-size:12.5px;color:#b3a795;font-style:italic;padding:6px 2px;}
+
+  .tag-input-row{display:flex;gap:8px;margin-bottom:12px;}
+  .tag-input-row input{
+    flex:1;font:inherit;font-size:13.5px;
+    background:#fffdf8;border:1px solid var(--line);border-radius:11px;
+    padding:10px 13px;color:var(--ink);outline:0;transition:.16s;
+  }
+  .tag-input-row input:focus{border-color:#d9b877;box-shadow:0 0 0 3px rgba(217,184,119,.2);}
+
+  .tag-suggest{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
+  .tag-suggest .lbl{
+    font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+    color:#a2988a;width:100%;margin-bottom:2px;
+  }
+  .sug{
+    font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;
+    background:#fff;border:1px dashed #d9c49a;color:#a3701f;
+    border-radius:8px;padding:4px 10px;transition:.15s;
+  }
+  .sug:hover{background:#fff6e6;border-style:solid;transform:translateY(-1px);}
+
+  .modal-actions{
+    display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;
+    margin-top:20px;padding-top:16px;border-top:1px solid var(--line);
+  }
+
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:#2b2723;color:#fff;font-size:13px;font-weight:600;
+    padding:11px 20px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.28);
+    opacity:0;pointer-events:none;transition:.28s;z-index:90;max-width:90vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .chat::-webkit-scrollbar,.verb-list::-webkit-scrollbar,
+  pre.json::-webkit-scrollbar,.modal-card::-webkit-scrollbar{width:9px;height:9px;}
+  .chat::-webkit-scrollbar-thumb,.verb-list::-webkit-scrollbar-thumb{
+    background:#e2d6c2;border-radius:999px;border:2px solid transparent;background-clip:content-box;}
+  pre.json::-webkit-scrollbar-thumb{background:#4a4239;border-radius:999px;}
+  .modal-card::-webkit-scrollbar-thumb{background:#e2d6c2;border-radius:999px;}
+
+  .footer-note{text-align:center;font-size:12px;color:#a2988a;padding:14px 0 0;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">☕</div>
+      <div>
+        <h1>Phrasal Verb Studio</h1>
+        <p id="pageSub">Role-play library · tags · progress</p>
+      </div>
+    </div>
+
+    <nav class="tabs">
+      <button class="tab active" data-view="lib">📚 Library</button>
+      <button class="tab" data-view="play">🎭 Role-Play</button>
+      <button class="tab" data-view="fmt">📄 JSON Format</button>
+    </nav>
+
+    <div class="toggles" id="playToggles">
+      <label class="switch on" id="swDefs"><input type="checkbox" id="tDefs" checked><span>Definitions</span></label>
+      <label class="switch" id="swVoice"><input type="checkbox" id="tVoice"><span>Read aloud</span></label>
+      <label class="switch" id="swAuto"><input type="checkbox" id="tAuto"><span>Auto-play</span></label>
+      <button class="btn ghost" id="restart">↻ Restart</button>
+    </div>
+  </header>
+
+  <!-- ================= LIBRARY ================= -->
+  <section id="view-lib" class="lib">
+    <div class="lib-head">
+      <div>
+        <h2>Your role-plays</h2>
+        <p class="lib-sub">Upload scripts, tag them, and launch any scene for practice.</p>
+      </div>
+      <div class="lib-actions">
+        <button class="btn" id="exportAll">⬇ Export all</button>
+        <button class="btn primary" id="uploadBtn">＋ Add role-play</button>
+        <input type="file" id="fileInput" accept=".json,application/json" multiple hidden>
+      </div>
+    </div>
+
+    <div class="mini-stats" id="miniStats"></div>
+
+    <div class="toolbar">
+      <label class="search">
+        <span>🔍</span>
+        <input type="search" id="searchInput" placeholder="Search titles, scenes, verbs, tags…">
+      </label>
+      <select class="select" id="sortSelect">
+        <option value="added">Recently added</option>
+        <option value="title">Title A–Z</option>
+        <option value="lines">Most lines</option>
+        <option value="verbs">Most verbs</option>
+      </select>
+      <button class="btn small ghost" id="clearFilters">Clear filters</button>
+    </div>
+
+    <div class="tagbar" id="tagbar"></div>
+
+    <div class="cards" id="cards"></div>
+
+    <div id="emptyState" class="empty hidden">
+      <div class="ico">🗂️</div>
+      <h3 id="emptyTitle">Nothing here yet</h3>
+      <p id="emptyText">Upload a JSON role-play, or load the built-in samples to get started.</p>
+      <button class="btn primary" id="emptyUpload">＋ Add role-play</button>
+      <button class="btn ghost" id="reseed" style="margin-left:8px">↺ Restore samples</button>
+    </div>
+
+    <div class="card" id="uploadCard">
+      <h3>Add a role-play</h3>
+      <p class="card-sub">Drop one or more <code>.json</code> files here. Each file becomes a card in your library — you can tag it straight away.</p>
+      <label class="drop" id="drop">
+        <span class="ico">📥</span>
+        <strong>Drop JSON files or click to browse</strong>
+        <small>Multiple files supported · duplicates allowed · everything stays in your browser</small>
+      </label>
+      <div class="status" id="status"></div>
+    </div>
+  </section>
+
+  <!-- ================= PLAY ================= -->
+  <section id="view-play" class="hidden">
+    <div class="grid">
+      <section class="stage">
+        <div class="scene-bar">
+          <span class="dot"></span>
+          <span id="sceneText">—</span>
+          <span class="progress"><span id="bar"></span></span>
+        </div>
+        <div class="chat" id="chat"></div>
+        <div class="hint" id="hint"></div>
+        <div class="controls">
+          <button class="btn primary" id="next">Next line ▸</button>
+          <button class="btn ghost small" id="backToLib">← Library</button>
+          <span class="counter" id="counter">0 / 0</span>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <h2 id="panelTitle">Phrasal verbs</h2>
+        <p class="sub" id="panelSub">They light up as the story unfolds.</p>
+        <ul class="verb-list" id="verbList"></ul>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= FORMAT ================= -->
+  <section id="view-fmt" class="fmt hidden">
+    <div class="fmt-cols">
+      <div class="card">
+        <h3>Field reference</h3>
+        <p class="card-sub">Everything except <code>lines</code> is optional. Missing characters and verb definitions are generated automatically.</p>
+        <div class="field-list">
+          <div class="field">
+            <div class="fk">title</div>
+            <div class="fv"><b>String.</b> Shown on the card and in the player header.</div>
+          </div>
+          <div class="field">
+            <div class="fk">subtitle</div>
+            <div class="fv"><b>String.</b> Short description under the title.</div>
+          </div>
+          <div class="field">
+            <div class="fk">scene</div>
+            <div class="fv"><b>String.</b> Where and when the scene takes place.</div>
+          </div>
+          <div class="field">
+            <div class="fk">characters<span class="opt">optional</span></div>
+            <div class="fv">
+              <b>Array of objects.</b> Each needs an <code>id</code> that matches the
+              <code>speaker</code> values in <code>lines</code>. <code>name</code>,
+              <code>initials</code>, <code>side</code>, <code>color</code>,
+              <code>soft</code>, <code>line</code> and <code>tagline</code> are all optional.
+              Unknown speakers get an auto-generated character.
+            </div>
+          </div>
+          <div class="field">
+            <div class="fk">verbs<span class="opt">optional</span></div>
+            <div class="fv">
+              <b>Object.</b> Maps a phrasal verb to its definition. Keys are matched in
+              lowercase. Any verb used in <code>lines</code> but missing here gets a
+              placeholder definition.
+            </div>
+          </div>
+          <div class="field">
+            <div class="fk">lines<span class="req">required</span></div>
+            <div class="fv">
+              <b>Array of objects.</b> Each line needs a <code>speaker</code> and a
+              <code>text</code>. The <code>verb</code> field is optional — if omitted,
+              the app reads the <code>*asterisks*</code> in the text instead.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Example structure</h3>
+        <p class="card-sub">A minimal but complete role-play — three lines, three verbs, two characters.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+          <button class="btn small" id="copyJson">📋 Copy</button>
+          <button class="btn small ghost" id="downloadExample">⬇ Download</button>
+        </div>
+        <pre class="json" id="jsonExample"></pre>
+      </div>
+    </div>
+
+    <p class="footer-note">Tip: the <code>*asterisks*</code> in each line mark the phrasal verb — they become the golden highlight in the chat.</p>
+  </section>
+</div>
+
+<!-- ---------- role picker ---------- -->
+<div class="overlay hidden" id="setup">
+  <div class="modal-card">
+    <h2 id="setupTitle">Choose your role</h2>
+    <p class="modal-sub" id="setupDesc">Pick a character to play. When it’s your turn, you’ll get a hint with the phrasal verb you need.</p>
+    <div class="roles" id="roles"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="setupCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- tag editor ---------- -->
+<div class="overlay hidden" id="tagModal">
+  <div class="modal-card">
+    <h2 id="tagModalTitle">Edit tags</h2>
+    <p class="modal-sub" id="tagModalSub">Tags help you find role-plays later. Press Enter to add one.</p>
+
+    <div class="tag-editor" id="tagEditor"></div>
+
+    <div class="tag-input-row">
+      <input type="text" id="tagInput" placeholder="e.g. reunion, b1, past-tense…" autocomplete="off">
+      <button class="btn small" id="tagAddBtn">Add</button>
+    </div>
+
+    <div class="tag-suggest" id="tagSuggest"></div>
+
+    <div class="modal-actions">
+      <button class="btn ghost" id="tagCancel">Cancel</button>
+      <button class="btn primary" id="tagSave">Save tags</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   1. SAMPLE SCRIPTS
+   ========================================================= */
+const SAMPLE_A = {
+  "title": "Come Back to Springvale",
+  "subtitle": "A phrasal-verb role-play",
+  "scene": "Café Aroma, Springvale — Saturday morning",
+  "characters": [
+    { "id":"alice","name":"Alice","initials":"AL","side":"left",
+      "color":"#2f6f6b","soft":"#e0f1ef","line":"#c6e3df",
+      "tagline":"The one who left and came back" },
+    { "id":"ben","name":"Ben","initials":"BE","side":"right",
+      "color":"#b4552d","soft":"#fbe7db","line":"#f0d4c3",
+      "tagline":"The one who stayed close to home" }
+  ],
+  "verbs": {
+    "come back":"to return to a place",
+    "get back":"to return to a place or to what you were doing",
+    "run into":"to meet someone by chance",
+    "come along":"to go somewhere with someone; to accompany",
+    "move in":"to start living in a new home",
+    "grow up":"to spend your childhood somewhere; to become an adult",
+    "bring up":"to care for and raise a child",
+    "come down":"to move down; to descend (stairs, a ladder…)",
+    "come in":"to enter a room or a building",
+    "come out":"to end up in a particular state (come out of something)",
+    "run down":"to criticise someone or something unfairly",
+    "start out":"to begin in a particular way",
+    "come up":"to arise, to happen (of a topic or an opportunity)",
+    "catch up":"to exchange news with someone you haven't seen for a while",
+    "leave behind":"to go away and not take something with you",
+    "return to":"to go back to a place or an activity",
+    "make for":"to result in; to be good for something",
+    "come off":"to take place with a particular result; to succeed",
+    "come through":"to do what is needed in a difficult situation",
+    "go over":"to examine or review something carefully"
+  },
+  "lines": [
+    { "speaker":"alice","text":"Ben? Ben Harper? I can't believe you *came back* to Springvale.","verb":"come back" },
+    { "speaker":"ben","text":"Alice! I only *got back* three days ago. Mum has been keeping me busy.","verb":"get back" },
+    { "speaker":"alice","text":"I *ran into* your sister at the station yesterday — she told me you were here.","verb":"run into" },
+    { "speaker":"ben","text":"Did she? I should have *come along*. I had errands all morning.","verb":"come along" },
+    { "speaker":"alice","text":"Same story here. I *moved in* to Gran's old flat on Monday.","verb":"move in" },
+    { "speaker":"ben","text":"No way — the one above the bakery? The flat where you *grew up*?","verb":"grow up" },
+    { "speaker":"alice","text":"The very one. Gran helped *bring me up* in that little place.","verb":"bring up" },
+    { "speaker":"ben","text":"I practically lived there too. Every Saturday I'd *come down* the fire escape instead of knocking.","verb":"come down" },
+    { "speaker":"alice","text":"And you'd *come in* through the kitchen without ever saying hello to Gran.","verb":"come in" },
+    { "speaker":"ben","text":"Honestly, I don't know how we *came out* of that summer in one piece.","verb":"come out" },
+    { "speaker":"alice","text":"Neither do I. But don't *run down* the old neighbourhood — I still think it's beautiful.","verb":"run down" },
+    { "speaker":"ben","text":"I'm not criticising it, I promise. It's just that half the shops have closed.","verb":null },
+    { "speaker":"alice","text":"That's exactly why I want to *start out* small — one studio, one class a week.","verb":"start out" },
+    { "speaker":"ben","text":"A dance studio? That's a big change. How did that *come up*?","verb":"come up" },
+    { "speaker":"alice","text":"By chance. A neighbour offered me her old space after we *caught up* at the market.","verb":"catch up" },
+    { "speaker":"ben","text":"So you *left behind* the London flat, the salary, all of it?","verb":"leave behind" },
+    { "speaker":"alice","text":"Most of it. I still *return to* London twice a year for private clients.","verb":"return to" },
+    { "speaker":"ben","text":"Good. That *makes for* a nice balance.","verb":"make for" },
+    { "speaker":"alice","text":"It does. Anyway — how did the launch of your restaurant *come off*?","verb":"come off" },
+    { "speaker":"ben","text":"It *came off* better than I deserved. We sold out by nine.","verb":"come off" },
+    { "speaker":"alice","text":"Of course it did. You always *came through* when it counted.","verb":"come through" },
+    { "speaker":"ben","text":"Thanks. Listen, I have to *get back* to the shop.","verb":"get back" },
+    { "speaker":"alice","text":"Before you go — can we *go over* Gran's photos on Friday?","verb":"go over" },
+    { "speaker":"ben","text":"Definitely. It's been good to *catch up* properly.","verb":"catch up" },
+    { "speaker":"alice","text":"Same. You know, I think we both had to leave to *grow up* — and now we get to do it here.","verb":"grow up" }
+  ]
+};
+
+const SAMPLE_B = {
+  "title": "Two in the Morning",
+  "subtitle": "A phrasal-verb role-play",
+  "scene": "The Night Owl Diner — Tuesday, 2:15 a.m.",
+  "characters": [
+    { "id":"nadia","name":"Nadia","initials":"NA","side":"left",
+      "color":"#3a5fa0","soft":"#e5ecfa","line":"#cbd9f2",
+      "tagline":"The nurse who never really left" },
+    { "id":"marco","name":"Marco","initials":"MA","side":"right",
+      "color":"#a03a6b","soft":"#fbe4ee","line":"#f2cbdd",
+      "tagline":"The driver who knows every road home" }
+  ],
+  "verbs": {
+    "turn up":"to arrive or appear, often unexpectedly",
+    "settle down":"to become calm and relaxed; to start a quieter life",
+    "figure out":"to understand or solve something",
+    "break down":"to stop working (of a machine or vehicle)",
+    "sort out":"to resolve a problem or organise something",
+    "put off":"to postpone something to a later time",
+    "hold on":"to wait for a moment",
+    "give up":"to stop trying; to quit something",
+    "bring back":"to make someone remember something",
+    "take up":"to start doing a new activity or hobby",
+    "end up":"to finally be in a particular place or situation",
+    "work out":"to develop in a particular way; to be successful",
+    "pull through":"to recover from a serious illness or difficulty",
+    "look after":"to take care of someone or something",
+    "get along":"to have a friendly relationship with someone",
+    "check in":"to make a brief visit to see how someone is",
+    "drop by":"to visit someone briefly, without an appointment",
+    "set up":"to arrange, build, or establish something",
+    "keep on":"to continue doing something",
+    "call off":"to cancel something that was planned"
+  },
+  "lines": [
+    { "speaker":"marco","text":"Nadia? I can't believe you *turned up* here at two in the morning.","verb":"turn up" },
+    { "speaker":"nadia","text":"Marco! Sit down — let me *settle down* for ten minutes first.","verb":"settle down" },
+    { "speaker":"marco","text":"Same here. Give me a second to *figure out* what day it is.","verb":"figure out" },
+    { "speaker":"nadia","text":"Rough week?","verb":null },
+    { "speaker":"marco","text":"You could say that. The cab *broke down* twice on the bridge tonight.","verb":"break down" },
+    { "speaker":"nadia","text":"Oh no. Did you manage to *sort out* the insurance?","verb":"sort out" },
+    { "speaker":"marco","text":"Eventually. They tried to *put off* the repair until next week.","verb":"put off" },
+    { "speaker":"nadia","text":"*Hold on* — you're still driving that old thing?","verb":"hold on" },
+    { "speaker":"marco","text":"I know, I know. I can't *give up* on it now.","verb":"give up" },
+    { "speaker":"nadia","text":"You never could. Remember that Fiat you had at nineteen?","verb":null },
+    { "speaker":"marco","text":"Don't. That car *brings back* too many memories.","verb":"bring back" },
+    { "speaker":"nadia","text":"Good ones, though. I *took up* driving because of you.","verb":"take up" },
+    { "speaker":"marco","text":"And I *ended up* as a driver because of you.","verb":"end up" },
+    { "speaker":"nadia","text":"Funny how that *worked out*.","verb":"work out" },
+    { "speaker":"marco","text":"So how's your mum? I heard she was ill.","verb":null },
+    { "speaker":"nadia","text":"She *pulled through*, thank God. My sister *looks after* her now.","verb":"pull through" },
+    { "speaker":"marco","text":"That's a relief. Do you two *get along* better these days?","verb":"get along" },
+    { "speaker":"nadia","text":"Much better. I *check in* on her every Sunday.","verb":"check in" },
+    { "speaker":"marco","text":"Good. I keep meaning to *drop by* and see her.","verb":"drop by" },
+    { "speaker":"nadia","text":"Do. She'd love it. I *set up* a little garden for her last spring.","verb":"set up" },
+    { "speaker":"marco","text":"You? A gardener?","verb":null },
+    { "speaker":"nadia","text":"I *keep on* surprising people.","verb":"keep on" },
+    { "speaker":"marco","text":"You do. Listen — did they *call off* the wedding in June?","verb":"call off" },
+    { "speaker":"nadia","text":"No, just postponed. They're happy, that's what matters.","verb":null },
+    { "speaker":"marco","text":"True. Come on — I'll drive you home. It's the least I can do.","verb":null }
+  ]
+};
+
+const DISPLAY_EXAMPLE = {
+  title: "Come Back to Springvale",
+  subtitle: "A phrasal-verb role-play",
+  scene: "Café Aroma, Springvale — Saturday morning",
+  characters: [
+    { id:"alice", name:"Alice", initials:"AL", side:"left",
+      color:"#2f6f6b", soft:"#e0f1ef", line:"#c6e3df",
+      tagline:"The one who left and came back" },
+    { id:"ben", name:"Ben", initials:"BE", side:"right",
+      color:"#b4552d", soft:"#fbe7db", line:"#f0d4c3",
+      tagline:"The one who stayed close to home" }
+  ],
+  verbs: {
+    "come back": "to return to a place",
+    "get back":  "to return to a place or to what you were doing",
+    "come along":"to go somewhere with someone; to accompany"
+  },
+  lines: [
+    { speaker:"alice", text:"Ben? I can't believe you *came back* to Springvale.", verb:"come back" },
+    { speaker:"ben",   text:"Alice! I only *got back* three days ago.",            verb:"get back" },
+    { speaker:"alice", text:"Ask your sister to *come along* on Friday.",          verb:"come along" }
+  ]
+};
+
+/* =========================================================
+   2. STATE
+   ========================================================= */
+const LS_KEY = 'rp.library.v1';
+const PALETTE = [
+  { main:'#2f6f6b', soft:'#e0f1ef', line:'#c6e3df' },
+  { main:'#b4552d', soft:'#fbe7db', line:'#f0d4c3' },
+  { main:'#6b4fa0', soft:'#eee7fa', line:'#ddd0f2' },
+  { main:'#2f6f3f', soft:'#e3f3e7', line:'#c9e6d1' },
+  { main:'#a03a6b', soft:'#fbe4ee', line:'#f2cbdd' },
+  { main:'#3a5fa0', soft:'#e5ecfa', line:'#cbd9f2' }
+];
+
+let library   = [];            // [{id, added, tags:[], script:{...}}]
+let activeTags = new Set();
+let searchQuery = '';
+let sortMode = 'added';
+let editingId = null;          // id being tag-edited
+let draftTags = [];            // working copy inside the tag modal
+
+/* play state */
+let SCRIPT = [], VERBS = {}, CHARACTERS = [], CHAR_MAP = {}, META = {};
+let currentPlayId = null;
+let role = 'audience', idx = 0, auto = false, defs = true, voice = false;
+let timer = null, finished = false;
+let order = [], counts = {}, used = {}, refs = {};
+
+/* =========================================================
+   3. DOM
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const chatEl    = $('chat');
+const verbList  = $('verbList');
+const nextBtn   = $('next');
+const hintEl    = $('hint');
+const counterEl = $('counter');
+const barEl     = $('bar');
+const setupEl   = $('setup');
+const rolesEl   = $('roles');
+const toastEl   = $('toast');
+const cardsEl   = $('cards');
+const tagbarEl  = $('tagbar');
+const statusEl  = $('status');
+
+/* =========================================================
+   4. UTILITIES
+   ========================================================= */
+function esc(s){
+  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+function escNoQuote(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmt(s){ return esc(s).replace(/\*(.+?)\*/g, '<mark>$1</mark>'); }
+function plain(s){ return String(s).replace(/\*/g,''); }
+function scrollDown(){ chatEl.scrollTop = chatEl.scrollHeight; }
+
+function shade(hex, amt){
+  let c = String(hex||'#888').replace('#','');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const num = parseInt(c, 16);
+  if (isNaN(num)) return hex;
+  let r = Math.min(255, Math.max(0, (num >> 16) + amt));
+  let g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amt));
+  let b = Math.min(255, Math.max(0, (num & 0xff) + amt));
+  return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+}
+
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toastEl.classList.remove('show'), 2200);
+}
+
+function uid(){
+  return 'rp_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+}
+
+function normTag(t){
+  return String(t).toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+function highlightJSON(str){
+  const safe = escNoQuote(str);
+  return safe.replace(
+    /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+    (m) => {
+      let cls = 'jn';
+      if (/^"/.test(m)) cls = /:$/.test(m) ? 'jk' : 'js';
+      else if (/true|false/.test(m)) cls = 'jb';
+      else if (/null/.test(m)) cls = 'ju';
+      return '<span class="' + cls + '">' + m + '</span>';
+    }
+  );
+}
+
+/* =========================================================
+   5. SCRIPT NORMALISATION
+   ========================================================= */
+function normalizeScript(raw){
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+    return { ok:false, errors:['The file must contain a JSON object at the top level.'] };
+
+  const rawLines = raw.lines || raw.script || raw.dialogue;
+  if (!Array.isArray(rawLines) || rawLines.length === 0)
+    return { ok:false, errors:['Missing "lines": it must be a non-empty array of dialogue objects.'] };
+
+  const errors = [];
+
+  /* --- characters --- */
+  let rawChars = [];
+  const rc = raw.characters || raw.cast;
+  if (Array.isArray(rc)) rawChars = rc.slice();
+  else if (rc && typeof rc === 'object')
+    rawChars = Object.keys(rc).map(k => {
+      const v = rc[k];
+      return (v && typeof v === 'object') ? Object.assign({ id:k }, v) : { id:k, name:String(v) };
+    });
+
+  const charMap = {};
+  rawChars.forEach((c, i) => {
+    const p = PALETTE[i % PALETTE.length];
+    const id = String(c.id || c.name || ('char' + (i + 1))).toLowerCase();
+    const nm = c.name || (id.charAt(0).toUpperCase() + id.slice(1));
+    charMap[id] = {
+      id,
+      name: nm,
+      initials: c.initials || nm.slice(0, 2).toUpperCase(),
+      side: (c.side === 'right') ? 'right' : (c.side === 'left' ? 'left' : (i % 2 === 0 ? 'left' : 'right')),
+      color: c.color || p.main,
+      soft:  c.soft  || p.soft,
+      line:  c.line  || p.line,
+      tagline: c.tagline || ''
+    };
+  });
+
+  /* --- lines --- */
+  const lines = [];
+  rawLines.forEach((l, i) => {
+    if (!l || typeof l !== 'object'){
+      errors.push('Line ' + (i + 1) + ' is not an object and was skipped.');
+      return;
+    }
+    const speakerRaw = l.speaker || l.s || l.who || l.character || l.from;
+    const textRaw    = l.text || l.t || l.line || l.say || l.dialogue;
+    let   verbRaw    = l.verb || l.v || l.phrasalVerb || l.target || null;
+
+    if (typeof textRaw !== 'string' || !textRaw.trim()){
+      errors.push('Line ' + (i + 1) + ' is missing a "text" string and was skipped.');
+      return;
+    }
+    if (!speakerRaw){
+      errors.push('Line ' + (i + 1) + ' is missing a "speaker" and was skipped.');
+      return;
+    }
+
+    const speaker = String(speakerRaw).toLowerCase().trim();
+
+    if (!verbRaw){
+      const m = textRaw.match(/\*(.+?)\*/);
+      if (m) verbRaw = m[1].replace(/[.,!?;:]+$/, '');
+    }
+
+    lines.push({
+      s: speaker,
+      t: textRaw,
+      v: verbRaw ? String(verbRaw).trim().toLowerCase() : null
+    });
+  });
+
+  if (lines.length === 0)
+    return { ok:false, errors: errors.concat(['No valid dialogue lines were found.']) };
+
+  /* --- auto-create characters for unknown speakers --- */
+  let ci = Object.keys(charMap).length;
+  lines.forEach(l => {
+    if (!charMap[l.s]){
+      const p = PALETTE[ci % PALETTE.length];
+      const nm = l.s.charAt(0).toUpperCase() + l.s.slice(1);
+      charMap[l.s] = {
+        id: l.s, name: nm, initials: nm.slice(0, 2).toUpperCase(),
+        side: ci % 2 === 0 ? 'left' : 'right',
+        color: p.main, soft: p.soft, line: p.line, tagline: ''
+      };
+      ci++;
+    }
+  });
+
+  /* --- verb dictionary --- */
+  const verbs = {};
+  const rv = raw.verbs || raw.definitions || raw.glossary;
+  if (rv && typeof rv === 'object' && !Array.isArray(rv))
+    Object.keys(rv).forEach(k => { verbs[k.toLowerCase()] = String(rv[k]); });
+
+  lines.forEach(l => { if (l.v && !verbs[l.v]) verbs[l.v] = 'definition not provided'; });
+
+  return {
+    ok: true,
+    errors,
+    data: {
+      title:    raw.title    || 'Untitled role-play',
+      subtitle: raw.subtitle || raw.description || '',
+      scene:    raw.scene    || raw.setting || '',
+      characters: Object.keys(charMap).map(k => charMap[k]),
+      verbs,
+      lines
+    }
+  };
+}
+
+/* =========================================================
+   6. STORAGE
+   ========================================================= */
+function loadLib(){
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw){
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return arr;
+    }
+  } catch(e){ /* ignore */ }
+  return null;
+}
+
+function saveLib(){
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(library));
+  } catch(e){
+    toast('Could not save — storage may be full');
+  }
+}
+
+function seedLibrary(){
+  const created = [];
+  [ [SAMPLE_A, ['reunion','b1','past-tense','café']],
+    [SAMPLE_B, ['night-shift','b1-b2','friends','work']]
+  ].forEach(([raw, tags]) => {
+    const res = normalizeScript(raw);
+    if (res.ok) created.push({ id: uid(), added: Date.now(), tags: tags.slice(), script: res.data });
+  });
+  return created;
+}
+
+/* =========================================================
+   7. LIBRARY RENDERING
+   ========================================================= */
+function allTagCounts(){
+  const map = {};
+  library.forEach(e => (e.tags || []).forEach(t => { map[t] = (map[t] || 0) + 1; }));
+  return map;
+}
+
+function visibleEntries(){
+  const q = searchQuery.trim().toLowerCase();
+  let list = library.filter(e => {
+    for (const t of activeTags) if (!(e.tags || []).includes(t)) return false;
+    if (!q) return true;
+    const s = e.script;
+    const hay = [
+      s.title, s.subtitle, s.scene,
+      ...(e.tags || []),
+      ...Object.keys(s.verbs || {}),
+      ...Object.values(s.verbs || {}),
+      ...(s.lines || []).map(l => l.t)
+    ].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+
+  list = list.slice().sort((a, b) => {
+    if (sortMode === 'title') return a.script.title.localeCompare(b.script.title);
+    if (sortMode === 'lines') return (b.script.lines.length) - (a.script.lines.length);
+    if (sortMode === 'verbs') return Object.keys(b.script.verbs).length - Object.keys(a.script.verbs).length;
+    return (b.added || 0) - (a.added || 0);
+  });
+
+  return list;
+}
+
+function renderMiniStats(){
+  const totalScripts = library.length;
+  const totalLines   = library.reduce((n, e) => n + e.script.lines.length, 0);
+  const verbSet      = new Set();
+  library.forEach(e => Object.keys(e.script.verbs).forEach(v => verbSet.add(v)));
+  const tagCount     = Object.keys(allTagCounts()).length;
+
+  $('miniStats').innerHTML =
+    '<div class="mini">📚 <b>' + totalScripts + '</b> role-plays</div>' +
+    '<div class="mini">💬 <b>' + totalLines + '</b> lines</div>' +
+    '<div class="mini">🔑 <b>' + verbSet.size + '</b> unique verbs</div>' +
+    '<div class="mini">🏷️ <b>' + tagCount + '</b> tags</div>';
+}
+
+function renderTagbar(){
+  const counts = allTagCounts();
+  const tags = Object.keys(counts).sort();
+  let html = '<span class="tagbar-label">Filter</span>';
+
+  if (tags.length === 0){
+    html += '<span style="font-size:12.5px;color:#b3a795;font-style:italic">No tags yet — add one to a role-play below.</span>';
+  } else {
+    html += '<button class="chip' + (activeTags.size === 0 ? ' active' : '') + '" data-tag="">All <span class="n">' + library.length + '</span></button>';
+    tags.forEach(t => {
+      const on = activeTags.has(t);
+      html += '<button class="chip' + (on ? ' active' : '') + '" data-tag="' + esc(t) + '">' +
+                esc(t) + ' <span class="n">' + counts[t] + '</span>' +
+              '</button>';
+    });
+    if (activeTags.size > 0)
+      html += '<button class="chip clear" id="clearTagFilter">✕ Clear</button>';
+  }
+
+  tagbarEl.innerHTML = html;
+}
+
+function cardHTML(entry){
+  const s = entry.script;
+  const chars = s.characters || [];
+  const verbCount = Object.keys(s.verbs || {}).length;
+  const tagList = entry.tags || [];
+
+  const avatars = chars.slice(0, 4).map(c =>
+    '<div class="av" style="background:linear-gradient(150deg,' + c.color + ',' + shade(c.color, -30) + ')" title="' + esc(c.name) + '">' +
+      esc(c.initials) +
+    '</div>'
+  ).join('');
+
+  const moreChars = chars.length > 4
+    ? '<div class="av" style="background:#b3a795">+' + (chars.length - 4) + '</div>'
+    : '';
+
+  const tagsHTML = tagList.length
+    ? tagList.map(t => '<span class="tag" data-tagfilter="' + esc(t) + '">🏷 ' + esc(t) + '</span>').join('')
+    : '<span class="tag-empty">No tags yet</span>';
+
+  const date = new Date(entry.added || Date.now());
+  const dateStr = date.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+
+  const c1 = chars[0] ? chars[0].color : '#c9862f';
+  const c2 = chars[1] ? chars[1].color : '#e0a75a';
+
+  return '<article class="rp-card" data-id="' + entry.id + '" style="--c1:' + c1 + ';--c2:' + c2 + '">' +
+    '<div class="rp-top">' +
+      '<div class="rp-avatars">' + avatars + moreChars + '</div>' +
+      '<div class="rp-titles">' +
+        '<h3 class="rp-title">' + esc(s.title) + '</h3>' +
+        (s.subtitle ? '<p class="rp-sub">' + esc(s.subtitle) + '</p>' : '') +
+      '</div>' +
+    '</div>' +
+
+    (s.scene ? '<div class="rp-scene"><span>📍</span><span>' + esc(s.scene) + '</span></div>' : '') +
+
+    '<div class="rp-stats">' +
+      '<span class="pill">' + s.lines.length + ' lines</span>' +
+      '<span class="pill gold">' + verbCount + ' verbs</span>' +
+      '<span class="pill">' + chars.length + ' characters</span>' +
+    '</div>' +
+
+    '<div class="rp-tags">' + tagsHTML +
+      '<button class="tag-add" data-act="tags">＋ tag</button>' +
+    '</div>' +
+
+    '<div class="rp-foot">' +
+      '<button class="btn primary small" data-act="play">▶ Play</button>' +
+      '<button class="btn small ghost" data-act="export">⬇ JSON</button>' +
+      '<span class="spacer"></span>' +
+      '<span class="rp-date">' + dateStr + '</span>' +
+      '<button class="btn tiny danger" data-act="delete" title="Delete">🗑</button>' +
+    '</div>' +
+  '</article>';
+}
+
+function renderCards(){
+  const list = visibleEntries();
+
+  if (library.length === 0){
+    cardsEl.innerHTML = '';
+    $('emptyState').classList.remove('hidden');
+    $('emptyTitle').textContent = 'Your library is empty';
+    $('emptyText').textContent = 'Upload a JSON role-play, or restore the built-in samples to get started.';
+    $('uploadCard').classList.remove('hidden');
+    return;
+  }
+
+  if (list.length === 0){
+    cardsEl.innerHTML = '';
+    $('emptyState').classList.remove('hidden');
+    $('emptyTitle').textContent = 'No matches';
+    $('emptyText').textContent = 'No role-play matches your current search or tag filters.';
+    $('uploadCard').classList.add('hidden');
+    return;
+  }
+
+  $('emptyState').classList.add('hidden');
+  $('uploadCard').classList.add('hidden');
+  cardsEl.innerHTML = list.map(cardHTML).join('');
+}
+
+function renderLibrary(){
+  renderMiniStats();
+  renderTagbar();
+  renderCards();
+}
+
+/* =========================================================
+   8. LIBRARY ACTIONS
+   ========================================================= */
+function findEntry(id){ return library.find(e => e.id === id); }
+
+function addScriptsFromFiles(files){
+  const results = { ok:0, fail:0, errors:[] };
+
+  const readers = Array.from(files).map(file => new Promise(resolve => {
+    if (!/\.json$/i.test(file.name) && file.type !== 'application/json'){
+      results.fail++;
+      results.errors.push(file.name + ' — not a .json file');
+      return resolve();
+    }
+    const fr = new FileReader();
+    fr.onload = () => {
+      let raw;
+      try { raw = JSON.parse(String(fr.result)); }
+      catch(e){
+        results.fail++;
+        results.errors.push(file.name + ' — invalid JSON (' + e.message + ')');
+        return resolve();
+      }
+      const res = normalizeScript(raw);
+      if (!res.ok){
+        results.fail++;
+        results.errors.push(file.name + ' — ' + res.errors[0]);
+        return resolve();
+      }
+      library.unshift({
+        id: uid(),
+        added: Date.now(),
+        tags: [],
+        script: res.data
+      });
+      results.ok++;
+      resolve();
+    };
+    fr.onerror = () => { results.fail++; results.errors.push(file.name + ' — read error'); resolve(); };
+    fr.readAsText(file);
+  }));
+
+  Promise.all(readers).then(() => {
+    saveLib();
+    renderLibrary();
+
+    if (results.ok && !results.fail){
+      setStatus('ok', '<b>Added ' + results.ok + ' role-play' + (results.ok > 1 ? 's' : '') + '.</b> ' +
+        'Give them tags below so you can find them later.');
+      toast('Added ' + results.ok + ' role-play' + (results.ok > 1 ? 's' : ''));
+    } else if (results.ok && results.fail){
+      setStatus('ok',
+        '<b>Added ' + results.ok + ', skipped ' + results.fail + '.</b>' +
+        '<ul>' + results.errors.slice(0, 6).map(e => '<li>' + esc(e) + '</li>').join('') + '</ul>');
+      toast('Added ' + results.ok + ' · skipped ' + results.fail);
+    } else {
+      setStatus('err',
+        '<b>Nothing was added.</b>' +
+        '<ul>' + results.errors.slice(0, 6).map(e => '<li>' + esc(e) + '</li>').join('') + '</ul>');
+    }
+  });
+}
+
+function setStatus(kind, html){
+  statusEl.className = 'status show ' + kind;
+  statusEl.innerHTML = html;
+}
+function clearStatus(){
+  statusEl.className = 'status';
+  statusEl.innerHTML = '';
+}
+
+function exportEntry(entry){
+  const s = entry.script;
+  const out = {
+    title: s.title,
+    subtitle: s.subtitle,
+    scene: s.scene,
+    characters: s.characters.map(c => ({
+      id: c.id, name: c.name, initials: c.initials, side: c.side,
+      color: c.color, soft: c.soft, line: c.line, tagline: c.tagline
+    })),
+    verbs: s.verbs,
+    lines: s.lines.map(l => ({ speaker: l.s, text: l.t, verb: l.v }))
+  };
+  if (entry.tags && entry.tags.length) out.tags = entry.tags.slice();
+  return out;
+}
+
+function downloadJSON(obj, filename){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 800);
+}
+
+function slugify(s){
+  return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'roleplay';
+}
+
+/* =========================================================
+   9. TAG EDITOR
+   ========================================================= */
+function openTagEditor(id){
+  const entry = findEntry(id);
+  if (!entry) return;
+
+  editingId = id;
+  draftTags = (entry.tags || []).slice();
+
+  $('tagModalTitle').textContent = 'Tags — ' + entry.script.title;
+  $('tagModalSub').textContent = 'Tags help you find role-plays later. Press Enter to add one, or pick a suggestion below.';
+
+  renderTagEditor();
+  $('tagModal').classList.remove('hidden');
+  setTimeout(() => $('tagInput').focus(), 60);
+}
+
+function renderTagEditor(){
+  const box = $('tagEditor');
+  if (draftTags.length === 0){
+    box.innerHTML = '<span class="tag-ph">No tags yet — add your first below.</span>';
+  } else {
+    box.innerHTML = draftTags.map((t, i) =>
+      '<span class="tag-pill">' + esc(t) +
+        '<button data-remove="' + i + '" title="Remove">✕</button>' +
+      '</span>'
+    ).join('');
+  }
+
+  /* suggestions: existing library tags not already applied */
+  const counts = allTagCounts();
+  const existing = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+  const sugg = existing.filter(t => !draftTags.includes(t)).slice(0, 14);
+
+  const sugBox = $('tagSuggest');
+  if (sugg.length === 0){
+    sugBox.innerHTML = '';
+  } else {
+    sugBox.innerHTML = '<span class="lbl">Suggestions</span>' +
+      sugg.map(t => '<button class="sug" data-sug="' + esc(t) + '">＋ ' + esc(t) +
+                    ' <span style="opacity:.6">(' + counts[t] + ')</span></button>').join('');
+  }
+}
+
+function commitTagInput(){
+  const input = $('tagInput');
+  const val = normTag(input.value);
+  if (!val) return;
+  if (!draftTags.includes(val)) draftTags.push(val);
+  input.value = '';
+  renderTagEditor();
+  input.focus();
+}
+
+function saveTags(){
+  const entry = findEntry(editingId);
+  if (entry){
+    entry.tags = draftTags.slice();
+    saveLib();
+    renderLibrary();
+    toast('Tags saved');
+  }
+  $('tagModal').classList.add('hidden');
+  editingId = null;
+  draftTags = [];
+}
+
+/* =========================================================
+   10. PLAY ENGINE
+   ========================================================= */
+function applyScript(script, entryId){
+  SCRIPT     = script.lines;
+  VERBS      = script.verbs;
+  CHARACTERS = script.characters;
+  CHAR_MAP   = {};
+  CHARACTERS.forEach(c => { CHAR_MAP[c.id] = c; });
+  META = { title: script.title, subtitle: script.subtitle, scene: script.scene };
+  currentPlayId = entryId || null;
+
+  order = []; counts = {}; used = {};
+  SCRIPT.forEach(l => {
+    if (!l.v) return;
+    if (!counts[l.v]) { counts[l.v] = 0; order.push(l.v); }
+    counts[l.v]++;
+  });
+  order.forEach(v => { used[v] = 0; });
+
+  $('panelTitle').textContent = order.length + ' phrasal verbs';
+  $('panelSub').textContent = META.title + ' · ' + SCRIPT.length + ' lines';
+
+  buildSidebar();
+  buildRolePicker();
+  reset();
+}
+
+function buildSidebar(){
+  verbList.innerHTML = '';
+  refs = {};
+  order.forEach(v => {
+    const li = document.createElement('li');
+    li.className = 'verb';
+    li.innerHTML = '<span class="vname">' + esc(v) + '</span>' +
+                   '<span class="vcount">0/' + counts[v] + '</span>';
+    verbList.appendChild(li);
+    refs[v] = li;
+  });
+  if (order.length === 0){
+    verbList.innerHTML = '<li class="verb" style="justify-content:center;color:#a2988a">No phrasal verbs marked</li>';
+  }
+}
+
+function bump(v){
+  if (!v) return;
+  used[v] = (used[v] || 0) + 1;
+  const li = refs[v];
+  if (!li) return;
+  li.querySelector('.vcount').textContent = used[v] + '/' + counts[v];
+  li.classList.add('hit');
+  if (used[v] >= counts[v]) li.classList.add('done');
+  li.classList.remove('flash');
+  void li.offsetWidth;
+  li.classList.add('flash');
+}
+
+function buildRolePicker(){
+  rolesEl.innerHTML = '';
+  $('setupTitle').textContent = 'Choose your role';
+  $('setupDesc').textContent = META.subtitle
+    ? META.subtitle + ' — pick a character to play. When it’s your turn, you’ll get a hint with the phrasal verb you need.'
+    : 'Pick a character to play. When it’s your turn, you’ll get a hint with the phrasal verb you need.';
+
+  CHARACTERS.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'role';
+    b.innerHTML =
+      '<div class="avatar" style="background:linear-gradient(150deg,' + c.color + ',' + shade(c.color, -30) + ')">' +
+        esc(c.initials) +
+      '</div>' +
+      '<strong>Play ' + esc(c.name) + '</strong>' +
+      '<small>' + esc(c.tagline || 'Take this part in the scene') + '</small>';
+    b.addEventListener('click', () => pickRole(c.id));
+    rolesEl.appendChild(b);
+  });
+
+  const a = document.createElement('button');
+  a.className = 'role';
+  a.innerHTML = '<div class="avatar" style="background:linear-gradient(150deg,#a3927a,#7d6c56)">👀</div>' +
+                '<strong>Just watch</strong>' +
+                '<small>Play the whole scene line by line</small>';
+  a.addEventListener('click', () => pickRole('audience'));
+  rolesEl.appendChild(a);
+}
+
+function pickRole(r){
+  role = r;
+  setupEl.classList.add('hidden');
+  reset();
+}
+
+function addMessage(line){
+  const c = CHAR_MAP[line.s] || {
+    name: line.s, initials: line.s.slice(0,2).toUpperCase(),
+    side: 'left', color: PALETTE[0].main, soft: PALETTE[0].soft, line: PALETTE[0].line
+  };
+
+  const el = document.createElement('div');
+  el.className = 'msg ' + (c.side === 'right' ? 'right' : 'left');
+  el.style.setProperty('--soft', c.soft);
+  el.style.setProperty('--line-c', c.line);
+
+  const defHTML = (defs && line.v)
+    ? '<div class="def">🔑 <b>' + esc(line.v) + '</b> — ' + esc(VERBS[line.v] || '—') + '</div>'
+    : '';
+
+  el.innerHTML =
+    '<div class="avatar" style="background:linear-gradient(150deg,' + c.color + ',' + shade(c.color, -30) + ')">' +
+      esc(c.initials) +
+    '</div>' +
+    '<div class="body">' +
+      '<div class="who">' + esc(c.name) + '</div>' +
+      '<div class="bubble">' + fmt(line.t) + '</div>' +
+      defHTML +
+    '</div>';
+
+  chatEl.appendChild(el);
+  scrollDown();
+}
+
+function say(text, who){
+  if (!voice || !('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(plain(text));
+    const i = CHARACTERS.findIndex(x => x.id === who);
+    u.rate  = 0.95;
+    u.pitch = i <= 0 ? 1.16 : (i === 1 ? 0.88 : 1);
+    window.speechSynthesis.speak(u);
+  } catch(e){ /* silent */ }
+}
+
+function updateProgress(){
+  const pct = SCRIPT.length ? (idx / SCRIPT.length) * 100 : 0;
+  barEl.style.width = pct + '%';
+  counterEl.textContent = idx + ' / ' + SCRIPT.length;
+}
+
+function updateControls(){
+  if (finished) return;
+  const next = SCRIPT[idx];
+  if (!next){ finish(); return; }
+
+  const isMine = role !== 'audience' && next.s === role;
+
+  if (isMine){
+    nextBtn.textContent = '🎭 Say your line';
+    hintEl.textContent = next.v
+      ? 'Your turn — use “' + next.v + '”: ' + (VERBS[next.v] || '')
+      : 'Your turn — say your line.';
+  } else if (role === 'audience'){
+    nextBtn.textContent = 'Next line ▸';
+    hintEl.textContent = '';
+  } else {
+    nextBtn.textContent = '▸ Continue';
+    hintEl.textContent = '';
+  }
+}
+
+function step(){
+  clearTimeout(timer);
+  if (finished) return;
+  if (idx >= SCRIPT.length){ finish(); return; }
+
+  const line = SCRIPT[idx];
+  addMessage(line);
+  bump(line.v);
+  say(line.t, line.s);
+
+  idx++;
+  updateProgress();
+  updateControls();
+
+  if (idx >= SCRIPT.length){ finish(); return; }
+  if (auto) timer = setTimeout(step, 2900);
+}
+
+function finish(){
+  if (finished) return;
+  finished = true;
+  clearTimeout(timer);
+  nextBtn.disabled = true;
+  nextBtn.textContent = '✓ Scene complete';
+  hintEl.textContent = '';
+
+  const b = document.createElement('div');
+  b.className = 'banner';
+  b.innerHTML = '🎬 <b>Scene complete.</b><br>You played through ' + SCRIPT.length +
+                ' lines and ' + order.length + ' phrasal verbs.';
+  chatEl.appendChild(b);
+  scrollDown();
+}
+
+function reset(){
+  clearTimeout(timer);
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+  idx = 0;
+  finished = false;
+  chatEl.innerHTML = '';
+  order.forEach(v => { used[v] = 0; });
+  buildSidebar();
+
+  nextBtn.disabled = false;
+  nextBtn.textContent = 'Next line ▸';
+  hintEl.textContent = '';
+
+  updateProgress();
+  updateControls();
+
+  if (auto) timer = setTimeout(step, 500);
+}
+
+function startPlay(id){
+  const entry = findEntry(id);
+  if (!entry){ toast('Role-play not found'); return; }
+
+  applyScript(entry.script, id);
+  setView('play');
+  setupEl.classList.remove('hidden');
+}
+
+/* =========================================================
+   11. VIEW SWITCHING
+   ========================================================= */
+let currentView = 'lib';
+
+function setView(v){
+  currentView = v;
+  document.querySelectorAll('.tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.view === v));
+  $('view-lib').classList.toggle('hidden', v !== 'lib');
+  $('view-play').classList.toggle('hidden', v !== 'play');
+  $('view-fmt').classList.toggle('hidden', v !== 'fmt');
+  $('playToggles').classList.toggle('hidden', v !== 'play');
+
+  if (v === 'lib') renderLibrary();
+  if (v === 'play' && SCRIPT.length === 0){
+    /* nothing loaded yet — send the user back */
+    toast('Pick a role-play from the library first');
+    setView('lib');
+  }
+}
+
+/* =========================================================
+   12. EVENT WIRING
+   ========================================================= */
+/* tabs */
+document.querySelectorAll('.tab').forEach(t =>
+  t.addEventListener('click', () => setView(t.dataset.view)));
+
+/* play controls */
+nextBtn.addEventListener('click', () => { clearTimeout(timer); step(); });
+$('restart').addEventListener('click', () => {
+  reset();
+  if (SCRIPT.length) setupEl.classList.remove('hidden');
+});
+$('backToLib').addEventListener('click', () => {
+  clearTimeout(timer);
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  setView('lib');
+});
+
+/* toggles */
+const tDefs = $('tDefs'), tVoice = $('tVoice'), tAuto = $('tAuto');
+const swDefs = $('swDefs'), swVoice = $('swVoice'), swAuto = $('swAuto');
+
+tDefs.addEventListener('change', () => {
+  defs = tDefs.checked;
+  swDefs.classList.toggle('on', defs);
+  document.querySelectorAll('.msg').forEach((el, i) => {
+    const line = SCRIPT[i];
+    if (!line) return;
+    const existing = el.querySelector('.def');
+    if (defs && line.v && !existing){
+      const d = document.createElement('div');
+      d.className = 'def';
+      d.innerHTML = '🔑 <b>' + esc(line.v) + '</b> — ' + esc(VERBS[line.v] || '—');
+      el.querySelector('.body').appendChild(d);
+    } else if (!defs && existing){
+      existing.remove();
+    }
+  });
+  scrollDown();
+});
+
+tVoice.addEventListener('change', () => {
+  voice = tVoice.checked;
+  swVoice.classList.toggle('on', voice);
+  if (!voice && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+});
+
+tAuto.addEventListener('change', () => {
+  auto = tAuto.checked;
+  swAuto.classList.toggle('on', auto);
+  clearTimeout(timer);
+  if (auto && !finished && idx > 0) timer = setTimeout(step, 900);
+  else if (auto && !finished && idx === 0 && !setupEl.classList.contains('hidden') === false) {
+    /* wait for role selection */
+  } else if (auto && !finished && idx === 0) {
+    timer = setTimeout(step, 500);
+  }
+});
+
+/* ---------- library: search / sort / clear ---------- */
+$('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  renderCards();
+});
+$('sortSelect').addEventListener('change', e => {
+  sortMode = e.target.value;
+  renderCards();
+});
+$('clearFilters').addEventListener('click', () => {
+  searchQuery = '';
+  $('searchInput').value = '';
+  activeTags.clear();
+  renderLibrary();
+  toast('Filters cleared');
+});
+
+/* ---------- library: tag bar (delegated) ---------- */
+tagbarEl.addEventListener('click', e => {
+  const clearBtn = e.target.closest('#clearTagFilter');
+  if (clearBtn){ activeTags.clear(); renderLibrary(); return; }
+
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  const t = chip.dataset.tag;
+  if (t === '' || t === undefined){ activeTags.clear(); }
+  else if (activeTags.has(t)) activeTags.delete(t);
+  else activeTags.add(t);
+  renderLibrary();
+});
+
+/* ---------- library: cards (delegated) ---------- */
+cardsEl.addEventListener('click', e => {
+  const card = e.target.closest('.rp-card');
+  if (!card) return;
+  const id = card.dataset.id;
+
+  /* clicking a tag chip on a card filters by it */
+  const tagFilter = e.target.closest('[data-tagfilter]');
+  if (tagFilter){
+    activeTags.clear();
+    activeTags.add(tagFilter.dataset.tagfilter);
+    renderLibrary();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  const actEl = e.target.closest('[data-act]');
+  if (!actEl){
+    /* clicking the card body also opens tags */
+    if (e.target.closest('.rp-foot')) return;
+    openTagEditor(id);
+    return;
+  }
+
+  const act = actEl.dataset.act;
+  if (act === 'play')   startPlay(id);
+  if (act === 'tags')   openTagEditor(id);
+  if (act === 'export'){
+    const entry = findEntry(id);
+    if (entry){
+      downloadJSON(exportEntry(entry), slugify(entry.script.title) + '.json');
+      toast('JSON downloaded');
+    }
+  }
+  if (act === 'delete'){
+    const entry = findEntry(id);
+    if (!entry) return;
+    if (confirm('Delete “' + entry.script.title + '” from your library?\n\nThis cannot be undone.')){
+      library = library.filter(x => x.id !== id);
+      saveLib();
+      renderLibrary();
+      toast('Deleted');
+    }
+  }
+});
+
+/* ---------- upload ---------- */
+function openFilePicker(){ $('fileInput').click(); }
+
+$('uploadBtn').addEventListener('click', openFilePicker);
+$('emptyUpload').addEventListener('click', openFilePicker);
+$('drop').addEventListener('click', openFilePicker);
+
+$('fileInput').addEventListener('change', e => {
+  if (e.target.files && e.target.files.length){
+    clearStatus();
+    addScriptsFromFiles(e.target.files);
+  }
+  e.target.value = '';
+});
+
+const dropEl = $('drop');
+['dragenter','dragover'].forEach(ev =>
+  dropEl.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dropEl.classList.add('over'); }));
+['dragleave','dragend'].forEach(ev =>
+  dropEl.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dropEl.classList.remove('over'); }));
+dropEl.addEventListener('drop', e => {
+  e.preventDefault(); e.stopPropagation();
+  dropEl.classList.remove('over');
+  const files = e.dataTransfer && e.dataTransfer.files;
+  if (files && files.length){ clearStatus(); addScriptsFromFiles(files); }
+});
+
+/* ---------- export all / reseed ---------- */
+$('exportAll').addEventListener('click', () => {
+  if (library.length === 0){ toast('Library is empty'); return; }
+  const all = library.map(exportEntry);
+  downloadJSON(all, 'roleplay-library.json');
+  toast('Exported ' + all.length + ' role-plays');
+});
+
+$('reseed').addEventListener('click', () => {
+  const fresh = seedLibrary();
+  if (fresh.length === 0){ toast('Could not restore samples'); return; }
+  fresh.forEach(e => library.unshift(e));
+  saveLib();
+  renderLibrary();
+  toast('Restored ' + fresh.length + ' sample role-plays');
+});
+
+/* ---------- role picker cancel ---------- */
+$('setupCancel').addEventListener('click', () => {
+  setupEl.classList.add('hidden');
+  setView('lib');
+});
+
+/* ---------- tag modal ---------- */
+$('tagInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter'){ e.preventDefault(); commitTagInput(); }
+  if (e.key === 'Escape'){ $('tagModal').classList.add('hidden'); editingId = null; }
+});
+$('tagAddBtn').addEventListener('click', commitTagInput);
+$('tagCancel').addEventListener('click', () => {
+  $('tagModal').classList.add('hidden');
+  editingId = null;
+  draftTags = [];
+});
+$('tagSave').addEventListener('click', saveTags);
+
+$('tagEditor').addEventListener('click', e => {
+  const btn = e.target.closest('[data-remove]');
+  if (!btn) return;
+  draftTags.splice(Number(btn.dataset.remove), 1);
+  renderTagEditor();
+});
+
+$('tagSuggest').addEventListener('click', e => {
+  const btn = e.target.closest('[data-sug]');
+  if (!btn) return;
+  const t = btn.dataset.sug;
+  if (!draftTags.includes(t)) draftTags.push(t);
+  renderTagEditor();
+  $('tagInput').focus();
+});
+
+/* close modals on backdrop click */
+[setupEl, $('tagModal')].forEach(ov => {
+  ov.addEventListener('click', e => {
+    if (e.target !== ov) return;
+    ov.classList.add('hidden');
+    if (ov === $('tagModal')){ editingId = null; draftTags = []; }
+    if (ov === setupEl) setView('lib');
+  });
+});
+
+/* keyboard shortcut: Escape closes overlays */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!$('tagModal').classList.contains('hidden')){
+    $('tagModal').classList.add('hidden'); editingId = null; draftTags = [];
+  } else if (!setupEl.classList.contains('hidden')){
+    setupEl.classList.add('hidden');
+    if (currentView === 'play') setView('lib');
+  }
+});
+
+/* ---------- format view buttons ---------- */
+$('copyJson').addEventListener('click', async () => {
+  const text = JSON.stringify(DISPLAY_EXAMPLE, null, 2);
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('JSON copied to clipboard');
+  } catch (err){
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('JSON copied to clipboard');
+  }
+});
+$('downloadExample').addEventListener('click', () => {
+  downloadJSON(DISPLAY_EXAMPLE, 'roleplay-example.json');
+  toast('Example JSON downloaded');
+});
+
+/* =========================================================
+   13. BOOT
+   ========================================================= */
+function boot(){
+  /* format view example */
+  $('jsonExample').innerHTML = highlightJSON(JSON.stringify(DISPLAY_EXAMPLE, null, 2));
+
+  /* library */
+  const stored = loadLib();
+  if (stored && stored.length){
+    library = stored;
+  } else {
+    library = seedLibrary();
+    saveLib();
+  }
+
+  renderLibrary();
+
+  /* load a script into the player so the Play tab has content */
+  if (library.length){
+    const first = library[0];
+    applyScript(first.script, first.id);
+  }
+
+  setView('lib');
+}
+
+boot();
+</script>
+</body>
+</html>
