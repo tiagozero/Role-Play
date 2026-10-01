@@ -508,6 +508,36 @@
   .modal-card::-webkit-scrollbar-thumb{background:#e2d6c2;border-radius:999px;}
 
   .footer-note{text-align:center;font-size:12px;color:#a2988a;padding:14px 0 0;}
+
+  /* ---------- branching choices ---------- */
+  .choice-box{align-self:stretch;display:flex;flex-direction:column;gap:9px;margin:6px 0 4px;animation:pop .35s ease;}
+  .choice-label{font-size:11.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#a2988a;}
+  .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media(max-width:700px){.choice-grid{grid-template-columns:1fr;}}
+  .choice{
+    font:inherit;font-size:14px;line-height:1.45;text-align:left;cursor:pointer;color:var(--ink);
+    display:flex;gap:10px;align-items:flex-start;
+    background:#fff;border:1.5px solid var(--cc,#e8ddcd);border-radius:14px;padding:11px 13px;
+    box-shadow:0 2px 8px rgba(130,110,80,.07);transition:.16s;
+  }
+  .choice:hover,.choice:focus-visible{
+    transform:translateY(-2px);outline:0;border-color:var(--cm,#c9862f);
+    background:var(--cs,#fffaf0);box-shadow:0 8px 20px rgba(120,100,70,.14);
+  }
+  .choice .key{
+    flex:none;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;
+    font-size:12px;font-weight:800;color:#fff;background:var(--cm,#c9862f);
+  }
+  .choice mark{background:var(--gold);color:#7a4a00;font-weight:700;padding:1px 5px;border-radius:6px;box-shadow:inset 0 -1px 0 #e8c96b;}
+  .msg.picked .bubble{border-color:var(--cm,#c9862f);border-width:1.5px;}
+  .pick-tag{font-size:10.5px;font-weight:800;color:#fff;background:var(--cm,#c9862f);border-radius:6px;padding:1px 6px;margin-left:6px;letter-spacing:.3px;}
+  .fb{
+    font-size:12px;color:#4d6a55;background:#f2f7f3;border:1px dashed #c9dccd;
+    padding:5px 10px;border-radius:9px;line-height:1.45;max-width:100%;animation:pop .3s ease;
+  }
+  .banner .end-title{font-size:15px;font-weight:800;color:#8a5c11;margin-bottom:6px;}
+  .banner .btn{margin-top:10px;}
+  .pill.branch{background:#eef3fb;border-color:#cbd9f2;color:#3a5fa0;}
 </style>
 </head>
 <body>
@@ -657,8 +687,38 @@
             <div class="fk">lines<span class="req">required</span></div>
             <div class="fv">
               <b>Array of objects.</b> Each line needs a <code>speaker</code> and a
-              <code>text</code>. The <code>verb</code> field is optional — if omitted,
+              <code>text</code> (or <code>choices</code>, see below). The <code>verb</code> field is optional — if omitted,
               the app reads the <code>*asterisks*</code> in the text instead.
+            </div>
+          </div>
+          <div class="field">
+            <div class="fk">lines[].id<span class="opt">optional</span></div>
+            <div class="fv"><b>String.</b> A unique name so other lines or choices can jump here with <code>next</code>.</div>
+          </div>
+          <div class="field">
+            <div class="fk">lines[].choices<span class="opt">optional</span></div>
+            <div class="fv">
+              <b>Array of 2–4 objects.</b> Turns the line into a <em>choice point</em>: the learner picks
+              one reply (A–D) and the story follows it. The line needs no <code>text</code>;
+              <code>speaker</code> is the character who replies. Each choice has
+              <code>text</code> (with the <code>*verb*</code> highlighted), and optionally
+              <code>verb</code>, <code>next</code> (the <code>id</code> to jump to) and
+              <code>feedback</code> (a short note shown after picking).
+            </div>
+          </div>
+          <div class="field">
+            <div class="fk">lines[].next<span class="opt">optional</span></div>
+            <div class="fv">
+              <b>String.</b> The <code>id</code> to play after this line. Omit it to continue with the
+              next line in the array; use <code>"end"</code> to stop. End every branch with
+              <code>next</code> (to rejoin the story) or an ending, otherwise play runs on into the next branch.
+            </div>
+          </div>
+          <div class="field">
+            <div class="fk">lines[].ending<span class="opt">optional</span></div>
+            <div class="fv">
+              <b>String.</b> Finishes the scene after this line and shows the title on the
+              final banner. <code>"end": true</code> also finishes the scene, without a title.
             </div>
           </div>
         </div>
@@ -666,7 +726,7 @@
 
       <div class="card">
         <h3>Example structure</h3>
-        <p class="card-sub">A minimal but complete role-play — three lines, three verbs, two characters.</p>
+        <p class="card-sub">A branching role-play — one choice point with four paths and four endings. Linear scripts without <code>choices</code> still work exactly as before.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
           <button class="btn small" id="copyJson">📋 Copy</button>
           <button class="btn small ghost" id="downloadExample">⬇ Download</button>
@@ -675,7 +735,7 @@
       </div>
     </div>
 
-    <p class="footer-note">Tip: the <code>*asterisks*</code> in each line mark the phrasal verb — they become the golden highlight in the chat.</p>
+    <p class="footer-note">Tip: the <code>*asterisks*</code> in each line mark the phrasal verb — they become the golden highlight in the chat. Press <code>1</code>–<code>4</code> (or <code>A</code>–<code>D</code>) to pick a reply with the keyboard.</p>
   </section>
 </div>
 
@@ -845,9 +905,226 @@ const SAMPLE_B = {
   ]
 };
 
+const SAMPLE_C = {
+  "title": "Lost at the Luggage Desk",
+  "subtitle": "A branching role-play — 2 choice points, 4 paths each, 4 endings",
+  "scene": "Heathrow Terminal 2 — Baggage Services, 9:40 p.m.",
+  "characters": [
+    {
+      "id": "priya",
+      "name": "Priya",
+      "initials": "PR",
+      "side": "left",
+      "color": "#3a5fa0",
+      "soft": "#e5ecfa",
+      "line": "#cbd9f2",
+      "tagline": "The traveller whose bag went missing"
+    },
+    {
+      "id": "sam",
+      "name": "Sam",
+      "initials": "SA",
+      "side": "right",
+      "color": "#b4552d",
+      "soft": "#fbe7db",
+      "line": "#f0d4c3",
+      "tagline": "The agent behind the desk"
+    }
+  ],
+  "verbs": {
+    "turn up": "to arrive or appear, often unexpectedly",
+    "speak up": "to say something openly and clearly, especially to complain",
+    "look into": "to investigate something",
+    "put up with": "to accept something annoying without complaining",
+    "go through": "to examine or list things one by one",
+    "flag up": "to draw attention to a problem",
+    "hold on": "to wait for a moment",
+    "track down": "to find something or someone after a search",
+    "mix up": "to confuse one thing with another; to send to the wrong place",
+    "settle for": "to accept something that is less than you wanted",
+    "set up": "to arrange or establish something",
+    "back up": "to support a claim with evidence",
+    "write down": "to record something on paper",
+    "send on": "to forward something to another address",
+    "drop by": "to visit briefly, without an appointment",
+    "make up for": "to compensate for something bad",
+    "give up": "to stop trying; to quit",
+    "work out": "to develop in a successful way",
+    "come by": "to visit or stop at a place",
+    "swing by": "to visit a place quickly, on your way somewhere",
+    "sort out": "to resolve a problem or organise something",
+    "show up": "to arrive or appear",
+    "hang on": "to wait; to keep going"
+  },
+  "lines": [
+    {
+      "id": "start",
+      "speaker": "sam",
+      "text": "Good evening. You're here about a missing bag? I bet it didn't *turn up* on the carousel.",
+      "verb": "turn up"
+    },
+    {
+      "id": "c1",
+      "speaker": "priya",
+      "choices": [
+        {
+          "text": "This is unacceptable! I have to *speak up* — it's the third time this year!",
+          "verb": "speak up",
+          "next": "angry",
+          "feedback": "Assertive, but it may put the agent on the defensive."
+        },
+        {
+          "text": "No problem. Could you *look into* where it might have ended up?",
+          "verb": "look into",
+          "next": "calm",
+          "feedback": "Polite and cooperative — agents usually work faster for you."
+        },
+        {
+          "text": "Oh well. I'll just *put up with* it. Do you have a phone charger?",
+          "verb": "put up with",
+          "next": "passive",
+          "feedback": "Very patient… maybe too patient!"
+        },
+        {
+          "text": "Let me *go through* what was in the bag. I can give you a full list.",
+          "verb": "go through",
+          "next": "organised",
+          "feedback": "Proactive — a detailed list strengthens any claim."
+        }
+      ]
+    },
+    {
+      "id": "angry",
+      "speaker": "sam",
+      "text": "I'm really sorry. Let me *flag up* your case to my supervisor right away.",
+      "verb": "flag up"
+    },
+    {
+      "speaker": "sam",
+      "text": "Please *hold on* while I check the system. What would you like us to do next?",
+      "verb": "hold on",
+      "next": "c2"
+    },
+    {
+      "id": "calm",
+      "speaker": "sam",
+      "text": "Of course. I'll try to *track down* the bag on the system.",
+      "verb": "track down"
+    },
+    {
+      "speaker": "sam",
+      "text": "It *got mixed up* with a flight to Frankfurt. How would you like to proceed?",
+      "verb": "mix up",
+      "next": "c2"
+    },
+    {
+      "id": "passive",
+      "speaker": "sam",
+      "text": "That's kind of you, but you shouldn't have to *settle for* that. Here's a charger.",
+      "verb": "settle for"
+    },
+    {
+      "speaker": "sam",
+      "text": "We'll *set up* a priority trace for your bag. What would you like next?",
+      "verb": "set up",
+      "next": "c2"
+    },
+    {
+      "id": "organised",
+      "speaker": "sam",
+      "text": "That's a huge help. A detailed list will *back up* your claim.",
+      "verb": "back up"
+    },
+    {
+      "speaker": "sam",
+      "text": "I'll *write down* the tag number as well. What would you like us to do next?",
+      "verb": "write down",
+      "next": "c2"
+    },
+    {
+      "id": "c2",
+      "speaker": "priya",
+      "choices": [
+        {
+          "text": "Please *send on* the bag to my hotel as soon as it's found.",
+          "verb": "send on",
+          "next": "end_hotel",
+          "feedback": "Convenient — no extra trip to the airport."
+        },
+        {
+          "text": "I'll *drop by* tomorrow morning to check in person.",
+          "verb": "drop by",
+          "next": "end_pickup",
+          "feedback": "Hands-on, but it costs you time."
+        },
+        {
+          "text": "I'd like you to *make up for* the delay — maybe a voucher?",
+          "verb": "make up for",
+          "next": "end_voucher",
+          "feedback": "A fair request. Asking politely usually works."
+        },
+        {
+          "text": "Never mind. I'll *give up* on the bag and buy some new clothes.",
+          "verb": "give up",
+          "next": "end_giveup",
+          "feedback": "Risky — bags are usually found within a couple of days."
+        }
+      ]
+    },
+    {
+      "id": "end_hotel",
+      "speaker": "sam",
+      "text": "Done. We'll *send on* the bag to your hotel by noon.",
+      "verb": "send on"
+    },
+    {
+      "speaker": "priya",
+      "text": "Perfect. That *works out* well — thank you!",
+      "verb": "work out",
+      "ending": "Smooth delivery"
+    },
+    {
+      "id": "end_pickup",
+      "speaker": "sam",
+      "text": "We open at six. You can *come by* any time after that.",
+      "verb": "come by"
+    },
+    {
+      "speaker": "priya",
+      "text": "Great — I'll *swing by* before my meeting.",
+      "verb": "swing by",
+      "ending": "Early bird"
+    },
+    {
+      "id": "end_voucher",
+      "speaker": "sam",
+      "text": "Leave it with me. I'll *sort out* a travel voucher right now.",
+      "verb": "sort out"
+    },
+    {
+      "speaker": "priya",
+      "text": "Thanks — that really *makes up for* the stress.",
+      "verb": "make up for",
+      "ending": "Compensation won"
+    },
+    {
+      "id": "end_giveup",
+      "speaker": "sam",
+      "text": "Please don't give up yet — bags usually *show up* within 48 hours.",
+      "verb": "show up"
+    },
+    {
+      "speaker": "priya",
+      "text": "Then I'll *hang on* a little longer. Keep me posted!",
+      "verb": "hang on",
+      "ending": "Hope remains"
+    }
+  ]
+};
+
 const DISPLAY_EXAMPLE = {
   title: "Come Back to Springvale",
-  subtitle: "A phrasal-verb role-play",
+  subtitle: "A branching role-play",
   scene: "Café Aroma, Springvale — Saturday morning",
   characters: [
     { id:"alice", name:"Alice", initials:"AL", side:"left",
@@ -858,14 +1135,39 @@ const DISPLAY_EXAMPLE = {
       tagline:"The one who stayed close to home" }
   ],
   verbs: {
-    "come back": "to return to a place",
-    "get back":  "to return to a place or to what you were doing",
-    "come along":"to go somewhere with someone; to accompany"
+    "come back":"to return to a place",
+    "get back":"to return to a place or to what you were doing",
+    "talk into":"to persuade someone to do something",
+    "get away":"to escape or take a break from a place",
+    "stay away":"to avoid a place",
+    "catch up":"to exchange news with someone you haven't seen for a while",
+    "give up":"to stop trying",
+    "leave behind":"to go away and not take something with you",
+    "turn up":"to arrive or appear"
   },
   lines: [
-    { speaker:"alice", text:"Ben? I can't believe you *came back* to Springvale.", verb:"come back" },
-    { speaker:"ben",   text:"Alice! I only *got back* three days ago.",            verb:"get back" },
-    { speaker:"alice", text:"Ask your sister to *come along* on Friday.",          verb:"come along" }
+    { id:"start", speaker:"alice",
+      text:"Ben? I can't believe you *came back* to Springvale.", verb:"come back" },
+
+    { id:"reply", speaker:"ben", choices:[
+      { text:"I only *got back* three days ago.", verb:"get back",
+        next:"end_a", feedback:"Neutral and informative." },
+      { text:"Mum *talked me into* it — I couldn't say no.", verb:"talk into",
+        next:"end_b", feedback:"Funny and warm." },
+      { text:"I had to *get away* from the city for a while.", verb:"get away",
+        next:"end_c", feedback:"Honest — it invites a deeper talk." },
+      { text:"Honestly, I couldn't *stay away* any longer.", verb:"stay away",
+        next:"end_d", feedback:"Sentimental and a little dramatic." }
+    ] },
+
+    { id:"end_a", speaker:"alice", text:"Three days! We should *catch up* properly.",
+      verb:"catch up", ending:"Quick catch-up" },
+    { id:"end_b", speaker:"alice", text:"Good old Mum. She never *gives up*.",
+      verb:"give up", ending:"Mum's influence" },
+    { id:"end_c", speaker:"alice", text:"I know the feeling. I *left behind* a lot, too.",
+      verb:"leave behind", ending:"A fresh start" },
+    { id:"end_d", speaker:"alice", text:"Then I'm glad you *turned up* today.",
+      verb:"turn up", ending:"Missing home" }
   ]
 };
 
@@ -892,7 +1194,8 @@ let draftTags = [];            // working copy inside the tag modal
 /* play state */
 let SCRIPT = [], VERBS = {}, CHARACTERS = [], CHAR_MAP = {}, META = {};
 let currentPlayId = null;
-let role = 'audience', idx = 0, auto = false, defs = true, voice = false;
+let role = 'audience', auto = false, defs = true, voice = false;
+let ptr = 0, played = 0, awaiting = false, currentChoice = null, picks = [], pathMax = 1, BRANCHING = false;
 let timer = null, finished = false;
 let order = [], counts = {}, used = {}, refs = {};
 
@@ -1006,8 +1309,18 @@ function normalizeScript(raw){
     };
   });
 
-  /* --- lines --- */
+  /* --- lines (linear or branching) --- */
+  const MAX_CHOICES = 4;
   const lines = [];
+  const pickVerb = (explicit, text) => {
+    let v = explicit || null;
+    if (!v){
+      const m = String(text || '').match(/\*(.+?)\*/);
+      if (m) v = m[1].replace(/[.,!?;:]+$/, '');
+    }
+    return v ? String(v).trim().toLowerCase() : null;
+  };
+
   rawLines.forEach((l, i) => {
     if (!l || typeof l !== 'object'){
       errors.push('Line ' + (i + 1) + ' is not an object and was skipped.');
@@ -1015,33 +1328,89 @@ function normalizeScript(raw){
     }
     const speakerRaw = l.speaker || l.s || l.who || l.character || l.from;
     const textRaw    = l.text || l.t || l.line || l.say || l.dialogue;
-    let   verbRaw    = l.verb || l.v || l.phrasalVerb || l.target || null;
+    const verbRaw    = l.verb || l.v || l.phrasalVerb || l.target || null;
 
-    if (typeof textRaw !== 'string' || !textRaw.trim()){
-      errors.push('Line ' + (i + 1) + ' is missing a "text" string and was skipped.');
-      return;
-    }
     if (!speakerRaw){
       errors.push('Line ' + (i + 1) + ' is missing a "speaker" and was skipped.');
       return;
     }
-
     const speaker = String(speakerRaw).toLowerCase().trim();
 
-    if (!verbRaw){
-      const m = textRaw.match(/\*(.+?)\*/);
-      if (m) verbRaw = m[1].replace(/[.,!?;:]+$/, '');
+    const node = {
+      s: speaker, t: '', v: null,
+      id: (l.id !== undefined && l.id !== null && String(l.id).trim()) ? String(l.id).trim() : null,
+      next: (l.next !== undefined && l.next !== null) ? l.next : (l.goto !== undefined ? l.goto : null),
+      end: !!l.end || (typeof l.ending === 'string' && l.ending.trim() !== ''),
+      ending: (typeof l.ending === 'string') ? l.ending.trim() : (typeof l.end === 'string' ? l.end.trim() : ''),
+      choices: null
+    };
+    if (node.ending) node.end = true;
+
+    /* choice point */
+    const rawChoices = l.choices || l.options;
+    if (Array.isArray(rawChoices) && rawChoices.length){
+      let cs = [];
+      rawChoices.forEach((c, ci) => {
+        if (typeof c === 'string') c = { text: c };
+        const ct = c && (c.text || c.t || c.say || c.line);
+        if (typeof ct !== 'string' || !ct.trim()){
+          errors.push('Line ' + (i + 1) + ', choice ' + (ci + 1) + ' has no "text" and was skipped.');
+          return;
+        }
+        cs.push({
+          t: ct,
+          v: pickVerb(c.verb || c.v || c.phrasalVerb, ct),
+          next: (c.next !== undefined && c.next !== null) ? c.next : (c.goto !== undefined ? c.goto : null),
+          fb: c.feedback || c.note || ''
+        });
+      });
+      if (cs.length > MAX_CHOICES){
+        errors.push('Line ' + (i + 1) + ' has ' + cs.length + ' choices — only the first ' + MAX_CHOICES + ' are used.');
+        cs = cs.slice(0, MAX_CHOICES);
+      }
+      if (cs.length >= 2){
+        node.choices = cs;
+        lines.push(node);
+        return;
+      }
+      errors.push('Line ' + (i + 1) + ' needs at least 2 valid choices' +
+        (typeof textRaw === 'string' && textRaw.trim() ? ' — treated as a normal line.' : ' and was skipped.'));
     }
 
-    lines.push({
-      s: speaker,
-      t: textRaw,
-      v: verbRaw ? String(verbRaw).trim().toLowerCase() : null
-    });
+    if (typeof textRaw !== 'string' || !textRaw.trim()){
+      if (!node.choices) errors.push('Line ' + (i + 1) + ' is missing a "text" string and was skipped.');
+      return;
+    }
+    node.t = textRaw;
+    node.v = pickVerb(verbRaw, textRaw);
+    lines.push(node);
   });
 
   if (lines.length === 0)
     return { ok:false, errors: errors.concat(['No valid dialogue lines were found.']) };
+
+  /* --- resolve ids → indices --- */
+  const idMap = {};
+  lines.forEach((l, i) => {
+    if (!l.id) return;
+    if (idMap[l.id] !== undefined) errors.push('Duplicate id "' + l.id + '" — the first one is used.');
+    else idMap[l.id] = i;
+  });
+  const resolveRef = (ref, where) => {
+    if (ref === null || ref === undefined || ref === '') return undefined;      /* continue in order */
+    const k = String(ref).trim();
+    if (k.toLowerCase() === 'end') return -1;                                     /* finish scene */
+    if (idMap[k] !== undefined) return idMap[k];
+    errors.push(where + ' points to unknown id "' + k + '" — continuing in order instead.');
+    return undefined;
+  };
+  lines.forEach((l, i) => {
+    l.n = resolveRef(l.next, 'Line ' + (i + 1));
+    if (l.choices) l.choices.forEach((c, ci) => {
+      c.n = resolveRef(c.next, 'Line ' + (i + 1) + ', choice ' + (ci + 1));
+    });
+  });
+  const choicePoints = lines.filter(l => l.choices).length;
 
   /* --- auto-create characters for unknown speakers --- */
   let ci = Object.keys(charMap).length;
@@ -1064,7 +1433,8 @@ function normalizeScript(raw){
   if (rv && typeof rv === 'object' && !Array.isArray(rv))
     Object.keys(rv).forEach(k => { verbs[k.toLowerCase()] = String(rv[k]); });
 
-  lines.forEach(l => { if (l.v && !verbs[l.v]) verbs[l.v] = 'definition not provided'; });
+  const needDef = v => { if (v && !verbs[v]) verbs[v] = 'definition not provided'; };
+  lines.forEach(l => { needDef(l.v); if (l.choices) l.choices.forEach(c => needDef(c.v)); });
 
   return {
     ok: true,
@@ -1075,7 +1445,9 @@ function normalizeScript(raw){
       scene:    raw.scene    || raw.setting || '',
       characters: Object.keys(charMap).map(k => charMap[k]),
       verbs,
-      lines
+      lines,
+      branching: choicePoints > 0,
+      choicePoints
     }
   };
 }
@@ -1105,7 +1477,8 @@ function saveLib(){
 function seedLibrary(){
   const created = [];
   [ [SAMPLE_A, ['reunion','b1','past-tense','café']],
-    [SAMPLE_B, ['night-shift','b1-b2','friends','work']]
+    [SAMPLE_B, ['night-shift','b1-b2','friends','work']],
+    [SAMPLE_C, ['branching','choices','airport','b1-b2']]
   ].forEach(([raw, tags]) => {
     const res = normalizeScript(raw);
     if (res.ok) created.push({ id: uid(), added: Date.now(), tags: tags.slice(), script: res.data });
@@ -1133,7 +1506,8 @@ function visibleEntries(){
       ...(e.tags || []),
       ...Object.keys(s.verbs || {}),
       ...Object.values(s.verbs || {}),
-      ...(s.lines || []).map(l => l.t)
+      ...(s.lines || []).map(l => l.t),
+      ...(s.lines || []).flatMap(l => l.choices ? l.choices.map(c => c.t) : [])
     ].join(' ').toLowerCase();
     return hay.includes(q);
   });
@@ -1225,6 +1599,7 @@ function cardHTML(entry){
       '<span class="pill">' + s.lines.length + ' lines</span>' +
       '<span class="pill gold">' + verbCount + ' verbs</span>' +
       '<span class="pill">' + chars.length + ' characters</span>' +
+      (s.branching ? '<span class="pill branch">🔀 ' + s.choicePoints + ' choice point' + (s.choicePoints > 1 ? 's' : '') + '</span>' : '') +
     '</div>' +
 
     '<div class="rp-tags">' + tagsHTML +
@@ -1356,7 +1731,25 @@ function exportEntry(entry){
       color: c.color, soft: c.soft, line: c.line, tagline: c.tagline
     })),
     verbs: s.verbs,
-    lines: s.lines.map(l => ({ speaker: l.s, text: l.t, verb: l.v }))
+    lines: s.lines.map(l => {
+      const o = {};
+      if (l.id) o.id = l.id;
+      o.speaker = l.s;
+      if (l.choices){
+        o.choices = l.choices.map(c => {
+          const q = { text: c.t, verb: c.v };
+          if (c.next !== null && c.next !== undefined && c.next !== '') q.next = c.next;
+          if (c.fb) q.feedback = c.fb;
+          return q;
+        });
+      } else {
+        o.text = l.t;
+        o.verb = l.v;
+      }
+      if (l.next !== null && l.next !== undefined && l.next !== '') o.next = l.next;
+      if (l.ending) o.ending = l.ending; else if (l.end) o.end = true;
+      return o;
+    })
   };
   if (entry.tags && entry.tags.length) out.tags = entry.tags.slice();
   return out;
@@ -1458,16 +1851,21 @@ function applyScript(script, entryId){
   META = { title: script.title, subtitle: script.subtitle, scene: script.scene };
   currentPlayId = entryId || null;
 
+  BRANCHING = !!script.branching;
   order = []; counts = {}; used = {};
-  SCRIPT.forEach(l => {
-    if (!l.v) return;
-    if (!counts[l.v]) { counts[l.v] = 0; order.push(l.v); }
-    counts[l.v]++;
-  });
+  const countVerb = v => {
+    if (!v) return;
+    if (!counts[v]) { counts[v] = 0; order.push(v); }
+    counts[v]++;
+  };
+  SCRIPT.forEach(l => { countVerb(l.v); if (l.choices) l.choices.forEach(c => countVerb(c.v)); });
   order.forEach(v => { used[v] = 0; });
+  pathMax = longestPath();
 
   $('panelTitle').textContent = order.length + ' phrasal verbs';
-  $('panelSub').textContent = META.title + ' · ' + SCRIPT.length + ' lines';
+  $('panelSub').textContent = META.title + (BRANCHING
+    ? ' · branching story — verbs from every path'
+    : ' · ' + SCRIPT.length + ' lines');
 
   buildSidebar();
   buildRolePicker();
@@ -1538,33 +1936,39 @@ function pickRole(r){
   reset();
 }
 
-function addMessage(line){
+function addMessage(line, opts){
+  opts = opts || {};
   const c = CHAR_MAP[line.s] || {
     name: line.s, initials: line.s.slice(0,2).toUpperCase(),
     side: 'left', color: PALETTE[0].main, soft: PALETTE[0].soft, line: PALETTE[0].line
   };
 
   const el = document.createElement('div');
-  el.className = 'msg ' + (c.side === 'right' ? 'right' : 'left');
+  el.className = 'msg ' + (c.side === 'right' ? 'right' : 'left') + (opts.picked ? ' picked' : '');
   el.style.setProperty('--soft', c.soft);
   el.style.setProperty('--line-c', c.line);
+  el.style.setProperty('--cm', c.color);
+  el._line = line;
 
   const defHTML = (defs && line.v)
     ? '<div class="def">🔑 <b>' + esc(line.v) + '</b> — ' + esc(VERBS[line.v] || '—') + '</div>'
     : '';
+  const fbHTML = opts.feedback ? '<div class="fb">💬 ' + esc(opts.feedback) + '</div>' : '';
+  const tagHTML = opts.tag ? '<span class="pick-tag">' + esc(opts.tag) + '</span>' : '';
 
   el.innerHTML =
     '<div class="avatar" style="background:linear-gradient(150deg,' + c.color + ',' + shade(c.color, -30) + ')">' +
       esc(c.initials) +
     '</div>' +
     '<div class="body">' +
-      '<div class="who">' + esc(c.name) + '</div>' +
+      '<div class="who">' + esc(c.name) + tagHTML + '</div>' +
       '<div class="bubble">' + fmt(line.t) + '</div>' +
-      defHTML +
+      defHTML + fbHTML +
     '</div>';
 
   chatEl.appendChild(el);
   scrollDown();
+  return el;
 }
 
 function say(text, who){
@@ -1579,15 +1983,56 @@ function say(text, who){
   } catch(e){ /* silent */ }
 }
 
+/* ---- flow helpers ---- */
+const LETTERS = 'ABCD';
+
+/* index of the line that follows node i (-1 = scene over) */
+function nextOf(i){
+  const l = SCRIPT[i];
+  if (!l || l.end) return -1;
+  if (l.n !== undefined) return l.n;
+  return (i + 1 < SCRIPT.length) ? i + 1 : -1;
+}
+function afterChoice(i, c){
+  if (c.n !== undefined) return c.n;
+  return (i + 1 < SCRIPT.length) ? i + 1 : -1;
+}
+
+/* longest possible path — used only for the progress bar */
+function longestPath(){
+  const memo = {}, busy = {};
+  function go(i){
+    if (i < 0 || i >= SCRIPT.length) return 0;
+    if (memo[i] !== undefined) return memo[i];
+    if (busy[i]) return 0;
+    busy[i] = true;
+    const l = SCRIPT[i];
+    let best;
+    if (l.choices){
+      best = 0;
+      l.choices.forEach(c => { best = Math.max(best, go(afterChoice(i, c))); });
+      best += 1;
+    } else {
+      best = 1 + go(nextOf(i));
+    }
+    busy[i] = false;
+    return (memo[i] = best);
+  }
+  return Math.max(1, go(0));
+}
+
 function updateProgress(){
-  const pct = SCRIPT.length ? (idx / SCRIPT.length) * 100 : 0;
+  const total = BRANCHING ? pathMax : SCRIPT.length;
+  const pct = total ? Math.min(100, (played / total) * 100) : 0;
   barEl.style.width = pct + '%';
-  counterEl.textContent = idx + ' / ' + SCRIPT.length;
+  counterEl.textContent = BRANCHING
+    ? played + ' lines · 🔀 ' + picks.length + ' choice' + (picks.length === 1 ? '' : 's')
+    : played + ' / ' + SCRIPT.length;
 }
 
 function updateControls(){
-  if (finished) return;
-  const next = SCRIPT[idx];
+  if (finished || awaiting) return;
+  const next = SCRIPT[ptr];
   if (!next){ finish(); return; }
 
   const isMine = role !== 'audience' && next.s === role;
@@ -1608,34 +2053,110 @@ function updateControls(){
 
 function step(){
   clearTimeout(timer);
-  if (finished) return;
-  if (idx >= SCRIPT.length){ finish(); return; }
+  if (finished || awaiting) return;
+  if (ptr < 0 || ptr >= SCRIPT.length){ finish(); return; }
 
-  const line = SCRIPT[idx];
+  const line = SCRIPT[ptr];
+  if (line.choices){ showChoices(ptr); return; }
+
   addMessage(line);
   bump(line.v);
   say(line.t, line.s);
 
-  idx++;
+  played++;
+  ptr = nextOf(ptr);
   updateProgress();
-  updateControls();
+  advanceFlow(line);
+}
 
-  if (idx >= SCRIPT.length){ finish(); return; }
+/* after any line was shown: finish, open a choice point, or wait for the next click */
+function advanceFlow(lastLine){
+  if (ptr < 0 || ptr >= SCRIPT.length){ finish(lastLine); return; }
+  if (SCRIPT[ptr].choices){ showChoices(ptr); return; }
+  updateControls();
   if (auto) timer = setTimeout(step, 2900);
 }
 
-function finish(){
+function showChoices(i){
+  const node = SCRIPT[i];
+  const c = CHAR_MAP[node.s] || { name:node.s, color:PALETTE[0].main, soft:PALETTE[0].soft, line:PALETTE[0].line };
+  awaiting = true;
+  clearTimeout(timer);
+
+  const box = document.createElement('div');
+  box.className = 'choice-box';
+  box.style.setProperty('--cm', c.color);
+  box.style.setProperty('--cs', c.soft);
+  box.style.setProperty('--cc', c.line);
+  box.innerHTML =
+    '<div class="choice-label">🔀 Choose how ' + esc(c.name) + ' replies</div>' +
+    '<div class="choice-grid">' +
+      node.choices.map((ch, k) =>
+        '<button class="choice" data-k="' + k + '">' +
+          '<span class="key">' + LETTERS[k] + '</span>' +
+          '<span>' + fmt(ch.t) + '</span>' +
+        '</button>').join('') +
+    '</div>';
+  box.addEventListener('click', e => {
+    const b = e.target.closest('.choice');
+    if (b) pickChoice(i, Number(b.dataset.k), box);
+  });
+  chatEl.appendChild(box);
+  scrollDown();
+
+  currentChoice = { i, box };
+  nextBtn.disabled = true;
+  nextBtn.textContent = '🔀 Pick a reply (' + LETTERS[0] + '–' + LETTERS[node.choices.length - 1] + ')';
+  hintEl.textContent = (role === node.s ? 'Your turn — ' : '') +
+    'each reply takes the story somewhere different. Tip: press ' +
+    '1–' + node.choices.length + ' on your keyboard.';
+}
+
+function pickChoice(i, k, box){
+  if (!awaiting || finished) return;
+  const node = SCRIPT[i], ch = node.choices[k];
+  awaiting = false;
+  currentChoice = null;
+  if (box && box.parentNode) box.remove();
+
+  const line = { s: node.s, t: ch.t, v: ch.v };
+  addMessage(line, { picked:true, feedback: ch.fb, tag: LETTERS[k] });
+  bump(ch.v);
+  say(ch.t, node.s);
+
+  played++;
+  picks.push(LETTERS[k]);
+  nextBtn.disabled = false;
+  ptr = afterChoice(i, ch);
+  updateProgress();
+  advanceFlow(line);
+}
+
+function finish(last){
   if (finished) return;
   finished = true;
+  awaiting = false;
+  currentChoice = null;
   clearTimeout(timer);
   nextBtn.disabled = true;
   nextBtn.textContent = '✓ Scene complete';
   hintEl.textContent = '';
 
+  const verbsHit = order.filter(v => used[v] > 0).length;
   const b = document.createElement('div');
   b.className = 'banner';
-  b.innerHTML = '🎬 <b>Scene complete.</b><br>You played through ' + SCRIPT.length +
-                ' lines and ' + order.length + ' phrasal verbs.';
+  if (BRANCHING){
+    b.innerHTML =
+      (last && last.ending ? '<div class="end-title">🏁 Ending: ' + esc(last.ending) + '</div>' : '') +
+      '🎬 <b>Scene complete.</b><br>You played ' + played + ' lines and used ' + verbsHit +
+      ' of ' + order.length + ' phrasal verbs.' +
+      (picks.length ? '<br>Your path: <b>' + picks.join(' → ') + '</b>' : '') +
+      '<br><button class="btn small" data-act="replay">↻ Try another path</button>';
+    b.querySelector('[data-act="replay"]').addEventListener('click', () => reset());
+  } else {
+    b.innerHTML = '🎬 <b>Scene complete.</b><br>You played through ' + SCRIPT.length +
+                  ' lines and ' + order.length + ' phrasal verbs.';
+  }
   chatEl.appendChild(b);
   scrollDown();
 }
@@ -1644,7 +2165,11 @@ function reset(){
   clearTimeout(timer);
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
-  idx = 0;
+  ptr = 0;
+  played = 0;
+  awaiting = false;
+  currentChoice = null;
+  picks = [];
   finished = false;
   chatEl.innerHTML = '';
   order.forEach(v => { used[v] = 0; });
@@ -1655,6 +2180,7 @@ function reset(){
   hintEl.textContent = '';
 
   updateProgress();
+  if (SCRIPT[0] && SCRIPT[0].choices){ showChoices(0); return; }
   updateControls();
 
   if (auto) timer = setTimeout(step, 500);
@@ -1718,7 +2244,7 @@ tDefs.addEventListener('change', () => {
   defs = tDefs.checked;
   swDefs.classList.toggle('on', defs);
   document.querySelectorAll('.msg').forEach((el, i) => {
-    const line = SCRIPT[i];
+    const line = el._line;
     if (!line) return;
     const existing = el.querySelector('.def');
     if (defs && line.v && !existing){
@@ -1743,11 +2269,10 @@ tAuto.addEventListener('change', () => {
   auto = tAuto.checked;
   swAuto.classList.toggle('on', auto);
   clearTimeout(timer);
-  if (auto && !finished && idx > 0) timer = setTimeout(step, 900);
-  else if (auto && !finished && idx === 0 && !setupEl.classList.contains('hidden') === false) {
-    /* wait for role selection */
-  } else if (auto && !finished && idx === 0) {
-    timer = setTimeout(step, 500);
+  if (auto && !finished && !awaiting){
+    if (played > 0) timer = setTimeout(step, 900);
+    else if (setupEl.classList.contains('hidden')) timer = setTimeout(step, 500);
+    /* otherwise wait for role selection */
   }
 });
 
@@ -1926,6 +2451,19 @@ document.addEventListener('keydown', e => {
     setupEl.classList.add('hidden');
     if (currentView === 'play') setView('lib');
   }
+});
+
+/* keyboard: 1–4 or A–D picks a reply */
+document.addEventListener('keydown', e => {
+  if (!awaiting || !currentChoice || currentView !== 'play') return;
+  if (!setupEl.classList.contains('hidden')) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.target && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+  const map = { '1':0,'2':1,'3':2,'4':3,'a':0,'b':1,'c':2,'d':3 };
+  const k = map[String(e.key).toLowerCase()];
+  if (k === undefined || k >= SCRIPT[currentChoice.i].choices.length) return;
+  e.preventDefault();
+  pickChoice(currentChoice.i, k, currentChoice.box);
 });
 
 /* ---------- format view buttons ---------- */
